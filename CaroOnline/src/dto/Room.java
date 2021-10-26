@@ -35,4 +35,10 @@ public class Room {
 		CurrentPlayers = currentplayers;
 		CurrentSpectators = currentspectators;
 	}
+	@Override
+	public String toString() {
+		return RoomID + "," + CurrentPlayers + "," + CurrentSpectators + "," + MaxSpectator
+				+ "," + RoomName + "," + Password + "," + HostDisplayName + "," 
+				+ HostPort + "," + GameMode;
+	}
 }
