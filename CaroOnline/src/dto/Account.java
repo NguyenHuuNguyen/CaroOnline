@@ -54,6 +54,30 @@ public class Account {
 	public void setDisplayName(String displayName) {
 		DisplayName = displayName;
 	}
+
+	public boolean isStatus() {
+		return Status;
+	}
+
+	public void setStatus(boolean status) {
+		Status = status;
+	}
+
+	public int getBattleWon() {
+		return BattleWon;
+	}
+
+	public void setBattleWon(int battleWon) {
+		BattleWon = battleWon;
+	}
+
+	public int getBattleLost() {
+		return BattleLost;
+	}
+
+	public void setBattleLost(int battleLost) {
+		BattleLost = battleLost;
+	}
 	
 	
 }
