@@ -13,19 +13,18 @@ import dto.Requests;
 import dto.Responses;
 
 public class MainServer {
-	public static Vector<CaroClient> clients = new Vector<>();
+	//public static Vector<CaroClient> clients = new Vector<>();
 	MainServer(){
 		try {
 			// reset status của các account về false khi khởi động
 			BLL.Instance().resetAllAccountStatus();
 			ServerSocket server = new ServerSocket(14972);
 			System.out.println("Server is started");
+			System.out.println("Waiting for client...");
 			while(true) {
-				System.out.println("Waiting for client...");
 				Socket sk = server.accept();
-				System.out.println("client accepted");
 				CaroClient a = new CaroClient(sk);
-				clients.add(a);
+				//clients.add(a);
 				a.start();
 			}
 		} catch (Exception e) {
@@ -43,11 +42,14 @@ class CaroClient extends Thread{
 	DataInputStream dis;
 	DataOutputStream dos;
 	boolean connectable = true;
+	String c;
 	public CaroClient(Socket SK) {
 		try {
 			sk = SK;
 			dis = new DataInputStream(sk.getInputStream());
 			dos = new DataOutputStream(sk.getOutputStream());
+			c = sk.getRemoteSocketAddress().toString();
+			System.out.println(c + " connected");
 		}
 		catch(Exception e) {
 			System.out.println(e.toString());
@@ -56,27 +58,30 @@ class CaroClient extends Thread{
 	}
 	public void run() {
 		try {
-			while(true) {
+			while(connectable) {
 				String s = dis.readUTF();
 				//
 				// xử lý request ở đây
 				//
 				if (s.equals(Requests.Login)) {
 					loginRequest();
-					return;
+				}
+				else if (s.equals(Requests.Logout)) {
+					logoutRequest();
 				}
 				
 				
-				dos.writeUTF(Responses.BadRequest);
+				else dos.writeUTF(Responses.BadRequest);
 			}
 		}
 		catch(Exception e) {
 			// bắt được lỗi, đóng kết nối
-			System.out.println(e.toString());
+			//System.out.println(e.toString());
+			if (user != null)
+				DAL.Instance().setAccountStatus(user.getId_user(), false);
 			connectable = false;
+			System.out.println(c + " disconnected");
 			try {
-				if (user != null) 
-					DAL.Instance().setAccountStatus(user.getId_user(), false);
 				sk.close();
 			}
 			catch (Exception e1){}
@@ -86,17 +91,23 @@ class CaroClient extends Thread{
 	{
 		String username = dis.readUTF();
 		String password = dis.readUTF();
-		try {
-			if (BLL.Instance().checkLogin(username, password))
-			{
+		if (BLL.Instance().checkLogin(username, password))
+		{
+			if (BLL.Instance().getAccountByUsername(username).isStatus() == false) {
 				dos.writeUTF(Responses.LoginSuccess);
 				user = DAL.Instance().getAccountByUsername(username);
-				DAL.Instance().setAccountStatus(user.getId_user(), true);
+				BLL.Instance().setAccountStatus(user.getId_user(), true);
 			}
-			else dos.writeUTF(Responses.LoginFail);
+			else {
+				dos.writeUTF(Responses.AccountIsInUse);
+			}
 		}
-		catch(Exception e) {
-			dos.writeUTF(Responses.DataBaseError);
-		}
+		else dos.writeUTF(Responses.LoginFail);
+		dos.flush();
+	}
+	private void logoutRequest() throws Exception
+	{
+		DAL.Instance().setAccountStatus(user.getId_user(), false);
+		sk.close();
 	}
 }

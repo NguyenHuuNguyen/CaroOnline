@@ -3,23 +3,30 @@ package gui;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Vector;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
+import dto.Account;
+import dto.Requests;
+import dto.Room;
 
-public class Play{
+
+public class User_Spectator implements Runnable{
 
 	public static void main(String[] args) {
-		new Play(); 
+		User_Spectator a = new User_Spectator(new Socket(), null, "localhost", 16969, null); 
+		Thread t = new Thread(a);
+		t.start();
 	}
 	
 	JFrame window = new JFrame();
@@ -34,8 +41,31 @@ public class Play{
 	ImageIcon ava1;
 	ImageIcon ava2;
 	
-	public Play(){
-		window.setTitle("Cờ Caro");
+	Socket skToMainServer;
+	DataInputStream disToMainServer;
+	DataOutputStream dosToMainServer;
+	
+	Socket skToHost;
+	DataInputStream disToHost;
+	DataOutputStream dosToHost;
+	
+	Account userAccount;
+	int[][] boardXY = new int[n][n];
+	
+	public User_Spectator(Socket sk, JFrame jf, String hostname, int port, Account useraccount){
+		if (sk != null)
+			try {
+//				skToMainServer = sk;
+//				dis = new DataInputStream(sk.getInputStream());
+//				dos = new DataOutputStream(sk.getOutputStream());	
+				skToHost = new Socket(hostname, port);
+				disToHost = new DataInputStream(skToHost.getInputStream());
+				dosToHost = new DataOutputStream(skToHost.getOutputStream());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		
+		window.setTitle("Cờ Caro - khán giả");
 		background = null;
 		ta.setEditable(false);
 		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -54,7 +84,6 @@ public class Play{
 			if(background!=null)
 			{
 				g1.drawImage(background.getImage(),0,0,getWidth(),getHeight(),null);
-				//g1.drawImage(img,175,112,null);
 			}}
 			};
 		p.setLayout(null);
@@ -120,11 +149,56 @@ public class Play{
 		this.background=img;
 	}
 	
+	public JPanel drawBoard() {
+		JPanel p1 = new JPanel() {
+			@Override
+			protected  void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				for(int i = 0; i<= n; i++)
+				{
+					g.drawLine(0, i*s, n*s, i*s);
+					g.drawLine(i*s, 0, i*s, n*s);
+				}
+				g.setFont(new Font("arial",Font.BOLD,s));
+				for(int i = 0; i < n; i++) {
+					for(int j = 0; j < n; j++) {
+						if (boardXY[i][j] == 0) continue;
+						String st = "o";
+						g.setColor(Color.BLUE);
+						int x = j*s + s - s/2 - s/4 - s/11;
+						int y = i*s + s - s/2 + s/4 + s/11;
+						if (boardXY[i][j] == 2) {
+							g.setColor(Color.RED);
+							st = "x";
+						}
+						g.drawString(st, x, y);
+					}
+				}
+			}
+		};
+		p1.setLayout(null);
+		p1.setBackground(Color.WHITE);
+		p1.setBounds(188, 125, n*s + 1, n*s + 1);
+		return p1;
+	}
+	
+	public void draw() {
+		board = drawBoard();
+		window.repaint();
+	}
+
 	//set Event
 	public void setEventbsend(JButton bsend) {
 		bsend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bsend đã được nhấn!!!");
+				try {
+					dosToHost.writeUTF(Requests.ChatMessage);
+					dosToHost.writeUTF(tf.getText());
+					tf.setText("");
+				}
+				catch(Exception e1) {
+					System.out.println(e1.toString());
+				}
 			}
 			
 		});
@@ -145,32 +219,6 @@ public class Play{
 			
 		});
 	}
-	
-	
-	public JPanel drawBoard() {
-		JPanel p1 = new JPanel() {
-			@Override
-			protected  void paintComponent(Graphics g1) {
-			super.paintComponent(g1);
-			for(int i = 0; i<= n; i++)
-			{
-				g1.drawLine(0, i*s, n*s, i*s);
-				g1.drawLine(i*s, 0, i*s, n*s);
-			}
-			}
-		};
-		p1.setLayout(null);
-		p1.setBackground(Color.WHITE);
-		p1.setBounds(188, 125, n*s + 1, n*s + 1);
-		return p1;
-	}
-	
-	public void draw() {
-		board = drawBoard();
-		window.repaint();
-	}
-	
-	
 	public void setEventbdrawProposal(JButton bdrawProposal) {
 		bdrawProposal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -186,5 +234,31 @@ public class Play{
 			}
 			
 		});
+	}
+	@Override
+	public void run() {
+		try {
+			while(true){
+				String s = disToHost.readUTF();
+				if (s.equals(Requests.XYCoordinate)) {
+					int i = disToHost.readInt();
+					int j = disToHost.readInt();
+					int type = disToHost.readInt();
+					boardXY[i][j] = type;
+					draw();
+					continue;
+				}
+				if (s.equals(Requests.ChatMessage)) {
+					s = disToHost.readUTF();
+					ta.append(s);
+					ta.append("\n");
+					continue;
+				}
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+			//xu ly loi, dang xuat
+		}
 	}
 }

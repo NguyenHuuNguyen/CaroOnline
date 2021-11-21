@@ -20,22 +20,22 @@ public class BLL {
 		return _Instance;
 	}
 	//
-	public boolean checkLogin(String username, String password) throws Exception
+	public boolean checkLogin(String username, String password)
 	{
 		return DAL.Instance().checkLogin(username, password);
 	}
 	
-	public void resetAllAccountStatus() throws Exception
+	public void resetAllAccountStatus()
 	{
 		DAL.Instance().resetAllAccountStatus();
 	}
 	
-	public Account getAccountByUsername(String username) throws Exception
+	public Account getAccountByUsername(String username)
 	{
 		return DAL.Instance().getAccountByUsername(username);
 	}
 	
-	public void updateAccountStatus(int id, boolean status) throws Exception
+	public void setAccountStatus(int id, boolean status)
 	{
 		DAL.Instance().setAccountStatus(id, status);
 	}
