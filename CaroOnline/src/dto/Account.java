@@ -18,7 +18,7 @@ public class Account {
 		this.id_user = id_user;
 		Username = username;
 		Password = password;
-		Status = status;
+		Status = status; 
 		DisplayName = displayName;
 		BattleWon = battleWon;
 		BattleLost = battleLost;

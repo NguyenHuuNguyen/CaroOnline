@@ -8,6 +8,9 @@ import java.sql.ResultSet;
 import dto.Account;
 
 public class DAL {
+	String url = "jdbc:mysql://localhost:3306/caro_pbl4";
+	String user = "root";
+	String password = "";
 	private Connection conn = null;
 	private PreparedStatement ps = null;
 	private ResultSet rs = null;
@@ -28,7 +31,7 @@ public class DAL {
 	{
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/caro_pbl4", "root", "");
+			conn = DriverManager.getConnection(url, user, password);
 			ps = conn.prepareStatement("select * from account where username = ? and password = ?");
 			ps.setString(1, username);
 			ps.setString(2, password);
@@ -50,7 +53,7 @@ public class DAL {
 	{
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/caro_pbl4", "root", "");
+			conn = DriverManager.getConnection(url, user, password);
 			ps = conn.prepareStatement("update account set Status = false where id_user = id_user");
 			ps.executeUpdate();
 		}
@@ -68,7 +71,7 @@ public class DAL {
 	{
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/caro_pbl4", "root", "");
+			conn = DriverManager.getConnection(url, user, password);
 			ps = conn.prepareStatement("select * from account where username = ?");
 			ps.setString(1, username);
 			ResultSet rs = ps.executeQuery();
@@ -92,7 +95,7 @@ public class DAL {
 	{
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/caro_pbl4", "root", "");
+			conn = DriverManager.getConnection(url, user, password);
 			ps = conn.prepareStatement("update account set status = ? where id_user = ?");
 			ps.setBoolean(1, status);
 			ps.setInt(2, id);

@@ -103,6 +103,7 @@ class CaroClient extends Thread{
 			}
 		}
 		else dos.writeUTF(Responses.LoginFail);
+		dos.flush();
 	}
 	private void logoutRequest() throws Exception
 	{

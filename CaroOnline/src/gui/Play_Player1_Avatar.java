@@ -4,7 +4,7 @@ import java.awt.Graphics;
 
 import javax.swing.*;
 
-public class Play_Player1 extends JFrame {
+public class Play_Player1_Avatar extends JFrame {
 	ImageIcon pl1;
 	public JPanel setPayer1(ImageIcon ava1) {
 		pl1 = new ImageIcon("././resources/images/player1.png");

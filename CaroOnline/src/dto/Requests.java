@@ -6,4 +6,6 @@ public class Requests {
 	public static String GetRooms = "#rq03";
 	public static String RoomUpdate = "#rq04";
 	public static String SaveBattleLog = "#rq05";
+	public static String XYCoordinate = "#rq06";
+	public static String ChatMessage = "#rq07";
 }
