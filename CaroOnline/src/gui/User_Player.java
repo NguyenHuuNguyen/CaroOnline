@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
@@ -21,10 +22,10 @@ import dto.Requests;
 import dto.Room;
 
 
-public class User_Spectator implements Runnable{
+public class User_Player implements Runnable{
 
 	public static void main(String[] args) {
-		User_Spectator a = new User_Spectator(new Socket(), null, "localhost", 16969, null); 
+		User_Player a = new User_Player(new Socket(), null, "localhost", 16969, null); 
 		Thread t = new Thread(a);
 		t.start();
 	}
@@ -32,6 +33,8 @@ public class User_Spectator implements Runnable{
 	JFrame window = new JFrame();
 	JPanel board = null;
 	
+	int XYtype = 2;
+	boolean isTurn = false;
 	static int n = 15;
     static int s = 30;
 	ImageIcon background;
@@ -57,9 +60,9 @@ public class User_Spectator implements Runnable{
 	Account userAccount;
 	int[][] boardXY = new int[n][n];
 	
-	public User_Spectator(Socket sk, JFrame jf, String hostname, int port, Account useraccount){
+	public User_Player(Socket sk, JFrame jf, String hostname, int port, Account useraccount){
 		userAccount = new Account(port, hostname, hostname, false, hostname, port, port);
-		userAccount.setDisplayName("Spectator");
+		userAccount.setDisplayName("Player");
 		
 		if (sk != null)
 			try {
@@ -69,11 +72,12 @@ public class User_Spectator implements Runnable{
 				skToHost = new Socket(hostname, port);
 				disToHost = new DataInputStream(skToHost.getInputStream());
 				dosToHost = new DataOutputStream(skToHost.getOutputStream());
+				dosToHost.writeUTF(Requests.Player2Joined);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		
-		window.setTitle("Cờ Caro - khán giả");
+		window.setTitle("Cờ Caro - người chơi 2");
 		background = null;
 		ta.setEditable(false);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -122,12 +126,12 @@ public class User_Spectator implements Runnable{
 		//button xin hoa
 		bdrawProposal = new JButton(new ImageIcon("././resources/images/bdrawproposal.png"));
 		bdrawProposal.setBounds(850, 95, 140, 75);
-		//bdrawProposal.setEnabled(false);
+		setEventbdrawProposal(bdrawProposal);
 		window.add(bdrawProposal);
 		//button dau hang
 		bff = new JButton(new ImageIcon("././resources/images/bff.png"));
 		bff.setBounds(1008, 95, 140, 75);
-		//bff.setEnabled(false);
+		setEventbff(bff);
 		window.add(bff);
 		//player1(tam)
 		ava1 = new ImageIcon("././resources/images/favicon.png");
@@ -147,6 +151,20 @@ public class User_Spectator implements Runnable{
 		
 		//board
 		board = drawBoard();
+		board.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				mousePressedOnBoard( e.getY()/s, e.getX()/s);
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {}
+			@Override
+			public void mouseReleased(MouseEvent e) {}
+			@Override
+			public void mouseEntered(MouseEvent e) {}
+			@Override
+			public void mouseExited(MouseEvent e) {}
+		  });
 		window.add(board);
 		
 		window.setVisible(true);
@@ -156,7 +174,22 @@ public class User_Spectator implements Runnable{
 	{
 		this.background=img;
 	}
-	
+	private void mousePressedOnBoard(int i, int j) {
+		//
+		// xu ly danh quan co o day
+		//
+		if (isTurn == false) return;
+		if (boardXY[i][j] != 0) return;
+		isTurn = false;
+		try {
+			dosToHost.writeUTF(Requests.XYCoordinate);
+			dosToHost.writeInt(i);
+			dosToHost.writeInt(j);
+		}
+		catch(Exception e) {
+			System.out.println(e.toString());
+		}
+	}
 	public JPanel drawBoard() {
 		JPanel p1 = new JPanel() {
 			@Override
@@ -232,6 +265,35 @@ public class User_Spectator implements Runnable{
 			
 		});
 	}
+	public void setEventbdrawProposal(JButton bdrawProposal) {
+		bdrawProposal.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					dosToHost.writeUTF(Requests.DrawProposal);
+					bdrawProposal.setEnabled(false);
+				}
+				catch(Exception e1) {
+					System.out.println(e1.toString());
+				}
+			}
+			
+		});
+	}
+	public void setEventbff(JButton bff) {
+		bff.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int input = JOptionPane.showConfirmDialog(null, "Xác nhận đầu hàng?");
+				if (input == 0) {
+					try {
+						dosToHost.writeUTF(Requests.Surrender);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+			
+		});
+	}
 	@Override
 	public void run() {
 		try {
@@ -242,6 +304,7 @@ public class User_Spectator implements Runnable{
 					int j = disToHost.readInt();
 					int type = disToHost.readInt();
 					boardXY[i][j] = type;
+					if (type != XYtype) isTurn = true;
 					draw();
 				}
 				else if (s.equals(Requests.ChatMessage)) {
@@ -253,11 +316,25 @@ public class User_Spectator implements Runnable{
 					s = disToHost.readUTF();
 					if (s.equals(Requests.Draw_GameResult)) {
 						PopUpMessage.infoBox("Hoà", "Kết quả");
+						bdrawProposal.setEnabled(true);
 					}
 					else {
 						PopUpMessage.infoBox(s + " thắng", "Kết quả");
-					}
+					} 
 					boardReset();
+				}
+				else if (s.equals(Requests.DrawProposal)) {
+					int input = JOptionPane.showConfirmDialog(null, "Đối thủ xin hoà, chấp nhận?");
+					if (input == 0) {
+						dosToHost.writeUTF(Requests.DrawProposalAccepted);
+					}
+					else {
+						dosToHost.writeUTF(Requests.DrawProposalRefused);
+					}
+				}
+				else if (s.equals(Requests.DrawProposalRefused)) {
+					PopUpMessage.infoBox("Đối thủ từ chối lời đề nghị hoà của bạn", "Thông báo");
+					bdrawProposal.setEnabled(true);
 				}
 			}
 		}

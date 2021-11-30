@@ -12,7 +12,7 @@ import java.net.Socket;
 
 import javax.swing.*;
 
-public class Menu extends JFrame{
+public class Menu{
 	public static void main(String[] args) {
 		new Menu(null, null);
 	}
@@ -38,7 +38,7 @@ public class Menu extends JFrame{
 			}
 		
 		backgroundmn = null;
-		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setResizable(false);
 		window.setSize(1180,740);
 		window.setLocationRelativeTo(null);
