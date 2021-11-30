@@ -17,4 +17,7 @@ public class Requests {
 	public static String DrawProposalAccepted = "#rq14";
 	public static String DrawProposalRefused = "#rq15";
 	public static String Surrender = "#rq16";
+	public static String CreateRoom = "#rq99";
+	public static String GetAllRoom = "#rp98";
+	public static String GetRoom = "#rp97";
 }

@@ -25,7 +25,7 @@ import dto.Room;
 public class User_Host implements Runnable{
 
 	public static void main(String[] args) {
-		User_Host a = new User_Host(new Socket(), null, null, null); 
+		User_Host a = new User_Host(new Socket(), null, 0, ""); 
 		Thread t = new Thread(a);
 		t.start();
 	}
@@ -61,7 +61,7 @@ public class User_Host implements Runnable{
 	Room currentRoom = null;
 	ServerSocket HostSocket = null;
 	
-	public User_Host(Socket sk, JFrame jf, Room room, Account useraccount){
+	public User_Host(Socket sk, JFrame jf, int idRoom, String username){
 		userAccount = new Account(0, null, null, isTurn, null, 0, 0);
 		userAccount.setDisplayName("Host");
 		
@@ -351,17 +351,17 @@ public class User_Host implements Runnable{
 	}
 	private void sendRoomToMainServer() {
 		try {
-			dosToMainServer.writeUTF(Requests.RoomUpdate);
-			dosToMainServer.writeInt(currentRoom.getRoomID());
-			dosToMainServer.writeUTF(currentRoom.getRoomName());
-			dosToMainServer.writeUTF(currentRoom.getPassword());
-			dosToMainServer.writeUTF(currentRoom.getHostDisplayName());
-			dosToMainServer.writeUTF(currentRoom.getHostIPAddress());
-			dosToMainServer.writeInt(currentRoom.getHostPort());
-			dosToMainServer.writeInt(currentRoom.getGameMode());
-			dosToMainServer.writeInt(currentRoom.getCurrentPlayers());
-			dosToMainServer.writeInt(currentRoom.getCurrentSpectators());
-			dosToMainServer.writeBoolean(currentRoom.isAlowSpectator());
+//			dosToMainServer.writeUTF(Requests.RoomUpdate);
+//			dosToMainServer.writeInt(currentRoom.getRoomID());
+//			dosToMainServer.writeUTF(currentRoom.getRoomName());
+//			dosToMainServer.writeUTF(currentRoom.getPassword());
+//			dosToMainServer.writeUTF(currentRoom.getHostDisplayName());
+//			dosToMainServer.writeUTF(currentRoom.getHostIPAddress());
+//			dosToMainServer.writeInt(currentRoom.getHostPort());
+//			dosToMainServer.writeInt(currentRoom.getGameMode());
+//			dosToMainServer.writeInt(currentRoom.getCurrentPlayers());
+//			dosToMainServer.writeInt(currentRoom.getCurrentSpectators());
+//			dosToMainServer.writeBoolean(currentRoom.isAlowSpectator());
 		}
 		catch(Exception e) {
 			System.out.println(e.toString());

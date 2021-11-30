@@ -60,7 +60,7 @@ public class User_Player implements Runnable{
 	Account userAccount;
 	int[][] boardXY = new int[n][n];
 	
-	public User_Player(Socket sk, JFrame jf, String hostname, int port, Account useraccount){
+	public User_Player(Socket sk, JFrame jf, String hostname, int port, String username){
 		userAccount = new Account(port, hostname, hostname, false, hostname, port, port);
 		userAccount.setDisplayName("Player");
 		

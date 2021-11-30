@@ -21,7 +21,6 @@ public class Login{
 	Socket sk;
 	DataInputStream dis;
 	DataOutputStream dos;
-	
 	JPanel content = null;
 	JFrame window = new JFrame();
 	
@@ -44,7 +43,7 @@ public class Login{
 	public Login() {
 		createConnection();
 		backgroundlo = null;
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		window.setResizable(false);
 		window.setSize(1180,740);
 		window.setLocationRelativeTo(null);
@@ -118,7 +117,7 @@ public class Login{
 						return;
 					}
 					if (s.equals(Responses.LoginSuccess)) {
-						new Menu(sk, window);
+						new Menu(sk, window, username.getText());
 						window.setVisible(false);
 						return;
 					}

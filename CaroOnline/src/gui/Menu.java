@@ -8,29 +8,52 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Vector;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import dto.Requests;
+import dto.Responses;
+import dto.Room;
 
 public class Menu{
 	public static void main(String[] args) {
-		new Menu(null, null);
+//		try {
+//			JFrame b = new JFrame();
+//			Socket g = new Socket("localhost",14972);
+//			new Menu(g,b);
+//		} catch (UnknownHostException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		new Menu(null, null,null);
 	}
 	
 	Socket skToMainServer;
 	DataInputStream dis;
 	DataOutputStream dos;
+	String username;
 	
 	ImageIcon backgroundmn;
 	JPanel pmn;
 	ImageIcon ava;
-	JTextField search_mn = new JTextField();
+	JTextField search_mn = new JTextField("");
 	JFrame window = new JFrame();
-	
-	public Menu(Socket sk, JFrame jf) {
+	Vector vtData = new Vector();
+	Vector vtHeader = new Vector();
+	JTable tb_room;
+	public Menu(Socket sk, JFrame jf, String _username) {
 		if (sk != null)
 			try {
 				skToMainServer = sk;
+				username = _username;
 				dis = new DataInputStream(sk.getInputStream());
 				dos = new DataOutputStream(sk.getOutputStream());
 			} catch (Exception e) {
@@ -38,7 +61,7 @@ public class Menu{
 			}
 		
 		backgroundmn = null;
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		window.setResizable(false);
 		window.setSize(1180,740);
 		window.setLocationRelativeTo(null);
@@ -68,6 +91,7 @@ public class Menu{
 		//nut chinh sua thong tin
 		JButton beditinfo = new JButton(new ImageIcon("././resources/images/beditinfo.png"));
 		beditinfo.setBounds(30, 600, 190, 40);
+		setEventbeditinfo(beditinfo);
 		window.add(beditinfo);
 		//nut dang xuat
 		JButton blogout = new JButton(new ImageIcon("././resources/images/blogout.png"));
@@ -123,6 +147,11 @@ public class Menu{
 		bsearch.setBounds(555, 233, 100, 30);
 		setEventbsearch(bsearch);
 		window.add(bsearch);
+		//table
+		setTableData();
+		//System.out.println("Server is started");
+		// khong cho chinh kich thuoc(ko thanh cong)
+		
 		//
 		window.setTitle("Cờ Caro");
 		window.setVisible(true);
@@ -148,8 +177,79 @@ public class Menu{
 	public void setEventbcreate_room(JButton bcreate_room) {
 		bcreate_room.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bcreate_room đã được nhấn!!!");
+				//System.out.println("bcreate_room đã được nhấn!!!");
+				new Create_Room(skToMainServer, username,window);
 			}		
 		});
 	}
+	public void setEventbeditinfo(JButton beditinfo) {
+		beditinfo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("beditinfo đã được nhấn!!!");
+			}		
+		});
+	}
+	public void setTableData() {
+		tb_room = new JTable();
+		JPanel add_tb = new JPanel();
+		add_tb.setLayout(null);
+		//test_tb.setSize(500,500);
+		vtHeader.add("ID");
+		vtHeader.add("TÊN PHÒNG");
+		vtHeader.add("MẬT KHẨU");
+		vtHeader.add("CHẾ ĐỘ");
+		vtHeader.add("KHÁN GIẢ");
+		vtHeader.add("THAM GIA");
+		//
+		Vector element;
+		try {
+			dos.writeUTF(Requests.GetAllRoom);
+			while (true) {
+				String t = dis.readUTF();
+				if (t.equals(Responses.Theend)) {
+					break;
+				}
+				element = new Vector();
+				element.add(dis.read());
+				element.add(dis.readUTF());
+				element.add(dis.readUTF());
+				element.add(dis.readUTF());
+				element.add(dis.readUTF());
+				element.add(dis.readUTF());
+				vtData.add(element);
+			}
+		}
+		catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		DefaultTableModel tableModel = new DefaultTableModel(vtData,vtHeader) {
+		    @Override
+		    public boolean isCellEditable(int row, int column ) {
+		       //all cells false
+		    	if (column == 5) {return true;}
+		    	else return false;
+		    }
+		};
+		tableModel.removeRow(0);
+		tb_room.setModel(tableModel);
+		tb_room.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		//
+		tb_room.getColumnModel().getColumn(0).setPreferredWidth(117);
+		tb_room.getColumnModel().getColumn(1).setPreferredWidth(140);
+		tb_room.getColumnModel().getColumn(2).setPreferredWidth(140);
+		tb_room.getColumnModel().getColumn(3).setPreferredWidth(140);
+		tb_room.getColumnModel().getColumn(4).setPreferredWidth(100);
+		tb_room.getColumnModel().getColumn(5).setPreferredWidth(140);
+		//
+		tb_room.getColumn("THAM GIA").setCellRenderer(new ButtonRenderer());
+		tb_room.getColumn("THAM GIA").setCellEditor(new ButtonEditor(new JCheckBox()));
+		
+		JScrollPane sp = new JScrollPane(tb_room);  
+		sp.setSize(820,382);
+		add_tb.setBounds(300, 290, 820, 382);
+		add_tb.setBackground(new Color(217, 246, 252));
+	    add_tb.add(sp);
+		window.add(add_tb);
+	}
+	// thêm hàm tạo phòng, vd: void createRoom(id room) { new ....}
 }

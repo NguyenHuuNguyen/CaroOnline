@@ -40,6 +40,10 @@ public class BLL {
 	{
 		DAL.Instance().setAccountStatus(id, status);
 	}
+	public String getDisplayName(String _username) {
+		Account a = getAccountByUsername(_username);
+		return a.getDisplayName();
+	}
 	public int isFinishCaro5(int[][] board, int ix, int jx, int playervalue) {
 		if (isFinishHorizontal(board, ix, jx, playervalue)
 			|| isFinishVertical(board, ix, jx, playervalue)

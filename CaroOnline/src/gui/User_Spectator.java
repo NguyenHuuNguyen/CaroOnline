@@ -57,7 +57,7 @@ public class User_Spectator implements Runnable{
 	Account userAccount;
 	int[][] boardXY = new int[n][n];
 	
-	public User_Spectator(Socket sk, JFrame jf, String hostname, int port, Account useraccount){
+	public User_Spectator(Socket sk, JFrame jf, String hostname, int port, String username){
 		userAccount = new Account(port, hostname, hostname, false, hostname, port, port);
 		userAccount.setDisplayName("Spectator");
 		

@@ -11,8 +11,12 @@ import dal.DAL;
 import dto.Account;
 import dto.Requests;
 import dto.Responses;
+import dto.Room;
 
 public class MainServer {
+
+	static Vector<Room> vtRoom = new Vector<>();
+	static int idroom = 1;
 	//public static Vector<CaroClient> clients = new Vector<>();
 	MainServer(){
 		try {
@@ -33,6 +37,8 @@ public class MainServer {
 	}
 	
 	public static void main(String[] args) {
+		Room a = new Room(0, "", "", "", "","","");
+		vtRoom.add(a);
 		new MainServer();
 	}
 }
@@ -44,7 +50,7 @@ class CaroClient extends Thread{
 	boolean connectable = true;
 	String c;
 	public CaroClient(Socket SK) {
-		try {
+		try {  
 			sk = SK;
 			dis = new DataInputStream(sk.getInputStream());
 			dos = new DataOutputStream(sk.getOutputStream());
@@ -69,8 +75,15 @@ class CaroClient extends Thread{
 				else if (s.equals(Requests.Logout)) {
 					logoutRequest();
 				}
-				
-				
+				else if (s.equals(Requests.CreateRoom)) {
+					createRoom();
+				}
+				else if(s.equals(Requests.GetAllRoom)) {
+					getAllRoom();
+				}
+				else if(s.equals(Requests.GetRoom)) {
+					getRoom();
+				}
 				else dos.writeUTF(Responses.BadRequest);
 			}
 		}
@@ -109,5 +122,44 @@ class CaroClient extends Thread{
 	{
 		DAL.Instance().setAccountStatus(user.getId_user(), false);
 		sk.close();
+	}
+	private void createRoom() throws Exception{
+		// TODO Auto-generated method stub
+		String userName = dis.readUTF();
+		String roomname = dis.readUTF();
+		String roompass = dis.readUTF();
+		String mode = dis.readUTF();
+		String alowspectator = dis.readUTF();
+		
+		if (roomname.equals("")) dos.writeUTF(Responses.RoomCreate_Fail);
+		else {
+			String displayName = BLL.Instance().getDisplayName(userName);
+			Room a = new Room(MainServer.idroom, roomname, roompass, displayName,"localhost", mode, alowspectator);
+			MainServer.vtRoom.add(a);
+			MainServer.idroom++;
+			dos.writeUTF(Responses.RoomCreate_Success);
+		}
+	}
+	private void getAllRoom() throws Exception{
+		for (Room i : MainServer.vtRoom) {
+			dos.writeUTF(Responses.Continue);
+			dos.write(i.getRoomID());
+			dos.writeUTF(i.getRoomName());
+			if (i.getPassword().equals("")) dos.writeUTF("Không");
+			else dos.writeUTF("Có");
+			dos.writeUTF(i.getMode());
+			dos.writeUTF(i.getAlowSpectator_String());
+			dos.writeUTF(i.getJoinButton());
+		}
+		dos.writeUTF(Responses.Theend);
+	}
+	private void getRoom() throws Exception{
+		// TODO Auto-generated method stub
+		String roomname = dis.readUTF();
+		for (Room i : MainServer.vtRoom) {
+			if (i.getRoomName().equals(roomname)) {
+				dos.write(i.getRoomID());
+			}
+		}
 	}
 }

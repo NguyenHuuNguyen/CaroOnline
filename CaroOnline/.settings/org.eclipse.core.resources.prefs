@@ -2,6 +2,7 @@ eclipse.preferences.version=1
 encoding//src/bll/BLL.java=UTF-8
 encoding//src/exec/Client.java=UTF-8
 encoding//src/exec/MainServer.java=UTF-8
+encoding//src/gui/Create_Room.java=UTF-8
 encoding//src/gui/Info.java=UTF-8
 encoding//src/gui/Login.java=UTF-8
 encoding//src/gui/Menu.java=UTF-8
