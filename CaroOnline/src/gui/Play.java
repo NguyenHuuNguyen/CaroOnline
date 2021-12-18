@@ -95,7 +95,7 @@ public class Play{
 		//player1(tam)
 		ava1 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		JPanel panel1 = plr1.setPayer1(ava1);
+		JPanel panel1 = plr1.setPayer1(ava1, "asdsd");
 		panel1.setLayout(null);
 		panel1.setBounds(20,595, 250, 100);
 		window.add(panel1);
@@ -103,7 +103,7 @@ public class Play{
 		//player2(tam)
 		ava2 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		JPanel panel2 = plr2.setPayer2(ava2);
+		JPanel panel2 = plr2.setPayer2(ava2, "asasd");
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);

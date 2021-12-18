@@ -25,7 +25,7 @@ import dto.Room;
 public class User_Player implements Runnable{
 
 	public static void main(String[] args) {
-		User_Player a = new User_Player(new Socket(), null, "localhost", 16969, null); 
+		User_Player a = new User_Player(new Socket(), null, "192.168.1.12", 16969, null); 
 		Thread t = new Thread(a);
 		t.start();
 	}
@@ -39,6 +39,7 @@ public class User_Player implements Runnable{
     static int s = 30;
 	ImageIcon background;
 	JPanel p ;
+	JPanel panel1;
 	JTextField tf = new JTextField();
 	JTextArea ta = new JTextArea();
 	ImageIcon ava1;
@@ -62,8 +63,8 @@ public class User_Player implements Runnable{
 	
 	public User_Player(Socket sk, JFrame jf, String hostname, int port, String username){
 		userAccount = new Account(port, hostname, hostname, false, hostname, port, port);
-		userAccount.setDisplayName("Player");
-		
+		userAccount.setDisplayName("Player2");
+		String hostDisplayName = "";
 		if (sk != null)
 			try {
 //				skToMainServer = sk;
@@ -73,6 +74,8 @@ public class User_Player implements Runnable{
 				disToHost = new DataInputStream(skToHost.getInputStream());
 				dosToHost = new DataOutputStream(skToHost.getOutputStream());
 				dosToHost.writeUTF(Requests.Player2Joined);
+				dosToHost.writeUTF(userAccount.getDisplayName());
+				hostDisplayName = disToHost.readUTF();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -136,7 +139,7 @@ public class User_Player implements Runnable{
 		//player1(tam)
 		ava1 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		JPanel panel1 = plr1.setPayer1(ava1);
+		panel1 = plr1.setPayer1(ava1, hostDisplayName);
 		panel1.setLayout(null);
 		panel1.setBounds(20,595, 250, 100);
 		window.add(panel1);
@@ -144,7 +147,7 @@ public class User_Player implements Runnable{
 		//player2(tam)
 		ava2 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		JPanel panel2 = plr2.setPayer2(ava2);
+		JPanel panel2 = plr2.setPayer2(ava2, userAccount.getDisplayName());
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);

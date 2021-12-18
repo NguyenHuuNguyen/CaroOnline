@@ -19,6 +19,7 @@ import javax.swing.*;
 import bll.BLL;
 import dto.Account;
 import dto.Requests;
+import dto.Responses;
 import dto.Room;
 
 
@@ -40,7 +41,8 @@ public class User_Host implements Runnable{
 	JTextField tf = new JTextField();
 	static JTextArea ta = new JTextArea();
 	ImageIcon ava1;
-	ImageIcon ava2;
+	static ImageIcon ava2;
+	static JPanel panel2;
 	static JButton bsend;
 	static JButton bop;
 	static JButton bexit;
@@ -55,8 +57,8 @@ public class User_Host implements Runnable{
 	static int XYtype = 1;
 	static boolean isTurn = true;
 	static int[][] boardXY = new int[n][n];
-	
-	Account userAccount;
+	static String player2DispayName = "";
+	static Account userAccount;
 	public static Vector<Client> clients = new Vector<>();
 	Room currentRoom = null;
 	ServerSocket HostSocket = null;
@@ -137,19 +139,17 @@ public class User_Host implements Runnable{
 		//player1(tam)
 		ava1 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		JPanel panel1 = plr1.setPayer1(ava1);
+		JPanel panel1 = plr1.setPayer1(ava1, userAccount.getDisplayName());
 		panel1.setLayout(null);
 		panel1.setBounds(20,595, 250, 100);
 		window.add(panel1);
-		
 		//player2(tam)
 		ava2 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		JPanel panel2 = plr2.setPayer2(ava2);
+		panel2 = plr2.setPayer2(ava2, "");
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);
-		
 		//board
 		board = drawBoard();
 		board.addMouseListener(new MouseListener() {
@@ -167,13 +167,22 @@ public class User_Host implements Runnable{
 			public void mouseExited(MouseEvent e) {}
 		  });
 		window.add(board);
-		
 		window.setVisible(true);
 	}
 	//
 	public void setBackground(ImageIcon img)
 	{
 		this.background=img;
+	}
+	public static void setPlayer2Info(String displayname) {
+		window.remove(panel2);
+		ava2 = new ImageIcon("././resources/images/favicon.png");
+		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
+		panel2 = plr2.setPayer2(ava2, displayname);
+		panel2.setLayout(null);
+		panel2.setBounds(560,10, 250, 100);
+		window.add(panel2);
+		window.repaint();
 	}
 	
 	static public JPanel drawBoard() {
@@ -369,8 +378,8 @@ public class User_Host implements Runnable{
 	}
 	@Override
 	public void run() {
+		System.out.println("Waiting...");
 		while(true) {
-			System.out.println("Waiting...");
 			try {
 				Socket sk = HostSocket.accept();
 				System.out.println("client accepted");
@@ -401,9 +410,6 @@ class Client extends Thread{
 			sk = SK;
 			dis = new DataInputStream(sk.getInputStream());
 			dos = new DataOutputStream(sk.getOutputStream());
-			//
-			// debug, lấy bàn cờ ngay khi vừa kết nối vào
-			//
 		}
 		catch(Exception e) {
 			System.out.println(e);
@@ -437,6 +443,13 @@ class Client extends Thread{
 				else if (s.equals(Requests.Player2Joined)) {
 					isPlayer2 = true;
 					User_Host.isPlayer2Joined = true;
+					String player2DisplayName = dis.readUTF();
+					User_Host.setPlayer2Info(player2DisplayName);
+					User_Host.player2DispayName = player2DisplayName;
+					dos.writeUTF(User_Host.userAccount.getDisplayName());
+					User_Host.sendStringToAllClients(Requests.SendInfos);
+					User_Host.sendStringToAllClients(User_Host.userAccount.getDisplayName());
+					User_Host.sendStringToAllClients(User_Host.player2DispayName);
 				}
 				else if (s.equals(Requests.Player2Leaved)) {
 					User_Host.isPlayer2Joined = false;
@@ -472,6 +485,22 @@ class Client extends Thread{
 					User_Host.sendStringToAllClients("Host");
 					PopUpMessage.infoBox("Host thắng", "Kết quả");
 					User_Host.boardReset();
+				}
+				else if (s.equals(Requests.GetBoard)) {
+					for(int i = 0; i < User_Host.n; i++) {
+						for(int j = 0; j < User_Host.n; j++) {
+							if (User_Host.boardXY[i][j] == 0) continue;
+							dos.writeUTF(Requests.XYCoordinate);
+							dos.writeInt(i);
+							dos.writeInt(j);
+							dos.writeInt(User_Host.boardXY[i][j]);
+						}
+					}
+				}
+				else if (s.equals(Requests.GetDisplayInfos)) {
+					dos.writeUTF(Requests.SendInfos);
+					dos.writeUTF(User_Host.userAccount.getDisplayName());
+					dos.writeUTF(User_Host.player2DispayName);
 				}
 			}
 		}

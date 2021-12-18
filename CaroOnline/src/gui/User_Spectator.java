@@ -18,6 +18,7 @@ import javax.swing.*;
 
 import dto.Account;
 import dto.Requests;
+import dto.Responses;
 import dto.Room;
 
 
@@ -36,6 +37,8 @@ public class User_Spectator implements Runnable{
     static int s = 30;
 	ImageIcon background;
 	JPanel p ;
+	JPanel panel1;
+	JPanel panel2;
 	JTextField tf = new JTextField();
 	JTextArea ta = new JTextArea();
 	ImageIcon ava1;
@@ -119,20 +122,20 @@ public class User_Spectator implements Runnable{
 		bexit.setBounds(1087, 10, 60, 30);
 		setEventbexit(bexit);
 		window.add(bexit);	
-		//button xin hoa
-		bdrawProposal = new JButton(new ImageIcon("././resources/images/bdrawproposal.png"));
-		bdrawProposal.setBounds(850, 95, 140, 75);
-		//bdrawProposal.setEnabled(false);
-		window.add(bdrawProposal);
-		//button dau hang
-		bff = new JButton(new ImageIcon("././resources/images/bff.png"));
-		bff.setBounds(1008, 95, 140, 75);
-		//bff.setEnabled(false);
-		window.add(bff);
-		//player1(tam)
+//		//button xin hoa
+//		bdrawProposal = new JButton(new ImageIcon("././resources/images/bdrawproposal.png"));
+//		bdrawProposal.setBounds(850, 95, 140, 75);
+//		    //bdrawProposal.setEnabled(false);
+//		window.add(bdrawProposal);
+//		//button dau hang
+//		bff = new JButton(new ImageIcon("././resources/images/bff.png"));
+//		bff.setBounds(1008, 95, 140, 75);
+//		    //bff.setEnabled(false);
+//		window.add(bff);
+//		//player1(tam)
 		ava1 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		JPanel panel1 = plr1.setPayer1(ava1);
+		panel1 = plr1.setPayer1(ava1, "");
 		panel1.setLayout(null);
 		panel1.setBounds(20,595, 250, 100);
 		window.add(panel1);
@@ -140,7 +143,7 @@ public class User_Spectator implements Runnable{
 		//player2(tam)
 		ava2 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		JPanel panel2 = plr2.setPayer2(ava2);
+		panel2 = plr2.setPayer2(ava2, "");
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);
@@ -155,6 +158,26 @@ public class User_Spectator implements Runnable{
 	public void setBackground(ImageIcon img)
 	{
 		this.background=img;
+	}
+	public void setPlayer2Info(String displayname) {
+		window.remove(panel2);
+		ava2 = new ImageIcon("././resources/images/favicon.png");
+		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
+		panel2 = plr2.setPayer2(ava2, displayname);
+		panel2.setLayout(null);
+		panel2.setBounds(560,10, 250, 100);
+		window.add(panel2);
+		window.repaint();
+	}
+	public void setPlayer1Info(String displayname) {
+		window.remove(panel1);
+		ava1 = new ImageIcon("././resources/images/favicon.png");
+		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
+		JPanel panel1 = plr1.setPayer1(ava1, displayname);
+		panel1.setLayout(null);
+		panel1.setBounds(20,595, 250, 100);
+		window.add(panel1);
+		window.repaint();
 	}
 	
 	public JPanel drawBoard() {
@@ -235,7 +258,9 @@ public class User_Spectator implements Runnable{
 	@Override
 	public void run() {
 		try {
-			while(true){
+			dosToHost.writeUTF(Requests.GetBoard);
+			dosToHost.writeUTF(Requests.GetDisplayInfos);
+			while (true){
 				String s = disToHost.readUTF();
 				if (s.equals(Requests.XYCoordinate)) {
 					int i = disToHost.readInt();
@@ -258,6 +283,12 @@ public class User_Spectator implements Runnable{
 						PopUpMessage.infoBox(s + " thắng", "Kết quả");
 					}
 					boardReset();
+				}
+				else if (s.equals(Requests.SendInfos)) {
+					String hostDisplayName = disToHost.readUTF();
+					String Player2DisplayName = disToHost.readUTF();
+					setPlayer1Info(hostDisplayName);
+					setPlayer2Info(Player2DisplayName);
 				}
 			}
 		}
