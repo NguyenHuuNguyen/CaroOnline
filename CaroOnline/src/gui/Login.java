@@ -21,7 +21,6 @@ public class Login{
 	Socket sk;
 	DataInputStream dis;
 	DataOutputStream dos;
-	
 	JPanel content = null;
 	JFrame window = new JFrame();
 	
@@ -118,7 +117,7 @@ public class Login{
 						return;
 					}
 					if (s.equals(Responses.LoginSuccess)) {
-						new Menu(sk, window);
+						new Menu(sk, window, username.getText());
 						window.setVisible(false);
 						return;
 					}

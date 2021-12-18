@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
@@ -18,14 +19,13 @@ import javax.swing.*;
 
 import dto.Account;
 import dto.Requests;
-import dto.Responses;
 import dto.Room;
 
 
-public class User_Spectator implements Runnable{
+public class User_Player implements Runnable{
 
 	public static void main(String[] args) {
-		User_Spectator a = new User_Spectator(new Socket(), null, "localhost", 16969, null); 
+		User_Player a = new User_Player(new Socket(), null, "192.168.1.12", 16969, null); 
 		Thread t = new Thread(a);
 		t.start();
 	}
@@ -33,12 +33,13 @@ public class User_Spectator implements Runnable{
 	JFrame window = new JFrame();
 	JPanel board = null;
 	
+	int XYtype = 2;
+	boolean isTurn = false;
 	static int n = 15;
     static int s = 30;
 	ImageIcon background;
 	JPanel p ;
 	JPanel panel1;
-	JPanel panel2;
 	JTextField tf = new JTextField();
 	JTextArea ta = new JTextArea();
 	ImageIcon ava1;
@@ -60,10 +61,10 @@ public class User_Spectator implements Runnable{
 	Account userAccount;
 	int[][] boardXY = new int[n][n];
 	
-	public User_Spectator(Socket sk, JFrame jf, String hostname, int port, String username){
+	public User_Player(Socket sk, JFrame jf, String hostname, int port, String username){
 		userAccount = new Account(port, hostname, hostname, false, hostname, port, port);
-		userAccount.setDisplayName("Spectator");
-		
+		userAccount.setDisplayName("Player2");
+		String hostDisplayName = "";
 		if (sk != null)
 			try {
 //				skToMainServer = sk;
@@ -72,11 +73,14 @@ public class User_Spectator implements Runnable{
 				skToHost = new Socket(hostname, port);
 				disToHost = new DataInputStream(skToHost.getInputStream());
 				dosToHost = new DataOutputStream(skToHost.getOutputStream());
+				dosToHost.writeUTF(Requests.Player2Joined);
+				dosToHost.writeUTF(userAccount.getDisplayName());
+				hostDisplayName = disToHost.readUTF();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		
-		window.setTitle("Cờ Caro - khán giả");
+		window.setTitle("Cờ Caro - người chơi 2");
 		background = null;
 		ta.setEditable(false);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -122,20 +126,20 @@ public class User_Spectator implements Runnable{
 		bexit.setBounds(1087, 10, 60, 30);
 		setEventbexit(bexit);
 		window.add(bexit);	
-//		//button xin hoa
-//		bdrawProposal = new JButton(new ImageIcon("././resources/images/bdrawproposal.png"));
-//		bdrawProposal.setBounds(850, 95, 140, 75);
-//		    //bdrawProposal.setEnabled(false);
-//		window.add(bdrawProposal);
-//		//button dau hang
-//		bff = new JButton(new ImageIcon("././resources/images/bff.png"));
-//		bff.setBounds(1008, 95, 140, 75);
-//		    //bff.setEnabled(false);
-//		window.add(bff);
-//		//player1(tam)
+		//button xin hoa
+		bdrawProposal = new JButton(new ImageIcon("././resources/images/bdrawproposal.png"));
+		bdrawProposal.setBounds(850, 95, 140, 75);
+		setEventbdrawProposal(bdrawProposal);
+		window.add(bdrawProposal);
+		//button dau hang
+		bff = new JButton(new ImageIcon("././resources/images/bff.png"));
+		bff.setBounds(1008, 95, 140, 75);
+		setEventbff(bff);
+		window.add(bff);
+		//player1(tam)
 		ava1 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		panel1 = plr1.setPayer1(ava1, "");
+		panel1 = plr1.setPayer1(ava1, hostDisplayName);
 		panel1.setLayout(null);
 		panel1.setBounds(20,595, 250, 100);
 		window.add(panel1);
@@ -143,13 +147,27 @@ public class User_Spectator implements Runnable{
 		//player2(tam)
 		ava2 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		panel2 = plr2.setPayer2(ava2, "");
+		JPanel panel2 = plr2.setPayer2(ava2, userAccount.getDisplayName());
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);
 		
 		//board
 		board = drawBoard();
+		board.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				mousePressedOnBoard( e.getY()/s, e.getX()/s);
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {}
+			@Override
+			public void mouseReleased(MouseEvent e) {}
+			@Override
+			public void mouseEntered(MouseEvent e) {}
+			@Override
+			public void mouseExited(MouseEvent e) {}
+		  });
 		window.add(board);
 		
 		window.setVisible(true);
@@ -159,27 +177,22 @@ public class User_Spectator implements Runnable{
 	{
 		this.background=img;
 	}
-	public void setPlayer2Info(String displayname) {
-		window.remove(panel2);
-		ava2 = new ImageIcon("././resources/images/favicon.png");
-		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		panel2 = plr2.setPayer2(ava2, displayname);
-		panel2.setLayout(null);
-		panel2.setBounds(560,10, 250, 100);
-		window.add(panel2);
-		window.repaint();
+	private void mousePressedOnBoard(int i, int j) {
+		//
+		// xu ly danh quan co o day
+		//
+		if (isTurn == false) return;
+		if (boardXY[i][j] != 0) return;
+		isTurn = false;
+		try {
+			dosToHost.writeUTF(Requests.XYCoordinate);
+			dosToHost.writeInt(i);
+			dosToHost.writeInt(j);
+		}
+		catch(Exception e) {
+			System.out.println(e.toString());
+		}
 	}
-	public void setPlayer1Info(String displayname) {
-		window.remove(panel1);
-		ava1 = new ImageIcon("././resources/images/favicon.png");
-		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		JPanel panel1 = plr1.setPayer1(ava1, displayname);
-		panel1.setLayout(null);
-		panel1.setBounds(20,595, 250, 100);
-		window.add(panel1);
-		window.repaint();
-	}
-	
 	public JPanel drawBoard() {
 		JPanel p1 = new JPanel() {
 			@Override
@@ -255,18 +268,46 @@ public class User_Spectator implements Runnable{
 			
 		});
 	}
+	public void setEventbdrawProposal(JButton bdrawProposal) {
+		bdrawProposal.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					dosToHost.writeUTF(Requests.DrawProposal);
+					bdrawProposal.setEnabled(false);
+				}
+				catch(Exception e1) {
+					System.out.println(e1.toString());
+				}
+			}
+			
+		});
+	}
+	public void setEventbff(JButton bff) {
+		bff.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int input = JOptionPane.showConfirmDialog(null, "Xác nhận đầu hàng?");
+				if (input == 0) {
+					try {
+						dosToHost.writeUTF(Requests.Surrender);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+			
+		});
+	}
 	@Override
 	public void run() {
 		try {
-			dosToHost.writeUTF(Requests.GetBoard);
-			dosToHost.writeUTF(Requests.GetDisplayInfos);
-			while (true){
+			while(true){
 				String s = disToHost.readUTF();
 				if (s.equals(Requests.XYCoordinate)) {
 					int i = disToHost.readInt();
 					int j = disToHost.readInt();
 					int type = disToHost.readInt();
 					boardXY[i][j] = type;
+					if (type != XYtype) isTurn = true;
 					draw();
 				}
 				else if (s.equals(Requests.ChatMessage)) {
@@ -278,17 +319,25 @@ public class User_Spectator implements Runnable{
 					s = disToHost.readUTF();
 					if (s.equals(Requests.Draw_GameResult)) {
 						PopUpMessage.infoBox("Hoà", "Kết quả");
+						bdrawProposal.setEnabled(true);
 					}
 					else {
 						PopUpMessage.infoBox(s + " thắng", "Kết quả");
-					}
+					} 
 					boardReset();
 				}
-				else if (s.equals(Requests.SendInfos)) {
-					String hostDisplayName = disToHost.readUTF();
-					String Player2DisplayName = disToHost.readUTF();
-					setPlayer1Info(hostDisplayName);
-					setPlayer2Info(Player2DisplayName);
+				else if (s.equals(Requests.DrawProposal)) {
+					int input = JOptionPane.showConfirmDialog(null, "Đối thủ xin hoà, chấp nhận?");
+					if (input == 0) {
+						dosToHost.writeUTF(Requests.DrawProposalAccepted);
+					}
+					else {
+						dosToHost.writeUTF(Requests.DrawProposalRefused);
+					}
+				}
+				else if (s.equals(Requests.DrawProposalRefused)) {
+					PopUpMessage.infoBox("Đối thủ từ chối lời đề nghị hoà của bạn", "Thông báo");
+					bdrawProposal.setEnabled(true);
 				}
 			}
 		}

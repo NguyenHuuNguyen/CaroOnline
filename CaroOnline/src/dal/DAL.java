@@ -9,6 +9,7 @@ import dto.Account;
 
 public class DAL {
 	String url = "jdbc:mysql://localhost:3306/caro_pbl4";
+	//String url = "jdbc:mysql://127.0.0.1:3307/caro_pbl4";
 	String user = "root";
 	String password = "";
 	private Connection conn = null;
@@ -27,14 +28,14 @@ public class DAL {
 	}
 	//
 	
-	public boolean checkLogin(String username, String password)
+	public boolean checkLogin(String username, String pass)
 	{
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection(url, user, password);
 			ps = conn.prepareStatement("select * from account where username = ? and password = ?");
 			ps.setString(1, username);
-			ps.setString(2, password);
+			ps.setString(2, pass);
 			ResultSet rs = ps.executeQuery();
 			return rs.next();
 		}
@@ -114,7 +115,7 @@ public class DAL {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		try {
-//			System.out.println(DAL.Instance().checkLogin("huunguyen", "4869"));
+			System.out.println(DAL.Instance().checkLogin("huunguyen", "4869"));
 //			System.out.println(DAL.Instance().getAccountByUsername("huunguyen").toString());
 //			DAL.Instance().setAccountStatus(1, true);
 //			System.out.println(DAL.Instance().getAccountByUsername("huunguyen").toString());

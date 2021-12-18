@@ -16,21 +16,23 @@ import java.util.Vector;
 
 import javax.swing.*;
 
+import bll.BLL;
 import dto.Account;
 import dto.Requests;
+import dto.Responses;
 import dto.Room;
 
 
 public class User_Host implements Runnable{
 
 	public static void main(String[] args) {
-		User_Host a = new User_Host(new Socket(), null, null, null); 
+		User_Host a = new User_Host(new Socket(), null, 0, ""); 
 		Thread t = new Thread(a);
 		t.start();
 	}
 	
-	JFrame window = new JFrame();
-	JPanel board = null;
+	static JFrame window = new JFrame();
+	static JPanel board = null;
 	
 	static int n = 15;
     static int s = 30;
@@ -39,22 +41,32 @@ public class User_Host implements Runnable{
 	JTextField tf = new JTextField();
 	static JTextArea ta = new JTextArea();
 	ImageIcon ava1;
-	ImageIcon ava2;
+	static ImageIcon ava2;
+	static JPanel panel2;
+	static JButton bsend;
+	static JButton bop;
+	static JButton bexit;
+	static JButton bdrawProposal;
+	static JButton bff;
 	
 	Socket skToMainServer;
 	DataInputStream disToMainServer;
 	DataOutputStream dosToMainServer;
 	
-	static boolean isOplayer;
-	boolean isTurn = true;
+	static boolean isPlayer2Joined;
+	static int XYtype = 1;
+	static boolean isTurn = true;
 	static int[][] boardXY = new int[n][n];
-	
-	Account userAccount;
-	public static Vector<Client_player> clients = new Vector<>();
+	static String player2DispayName = "";
+	static Account userAccount;
+	public static Vector<Client> clients = new Vector<>();
 	Room currentRoom = null;
 	ServerSocket HostSocket = null;
 	
-	public User_Host(Socket sk, JFrame jf, Room room, Account useraccount){
+	public User_Host(Socket sk, JFrame jf, int idRoom, String username){
+		userAccount = new Account(0, null, null, isTurn, null, 0, 0);
+		userAccount.setDisplayName("Host");
+		
 		if (sk != null)
 			try {
 //				skToMainServer = sk;
@@ -71,7 +83,7 @@ public class User_Host implements Runnable{
 		window.setTitle("Cờ Caro - chủ phòng");
 		background = null;
 		ta.setEditable(false);
-		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setResizable(false);
 		window.setSize(1180,740);
 		window.setLocationRelativeTo(null);
@@ -100,46 +112,44 @@ public class User_Host implements Runnable{
 	    tf.setBounds(850, 615, 230, 30);
 	    window.add(tf);
 		//button "send"
-		JButton bsend = new JButton(new ImageIcon("././resources/images/bsend.png"));
+		bsend = new JButton(new ImageIcon("././resources/images/bsend.png"));
 		bsend.setBounds(1090, 615, 60, 30);
 		setEventbsend(bsend);
 		window.add(bsend);
 		//button luachon
-		JButton bop = new JButton(new ImageIcon("././resources/images/bop.png"));
+		bop = new JButton(new ImageIcon("././resources/images/bop.png"));
 		bop.setBounds(1102, 217, 45, 25);
 		setEventbop(bop);
 		window.add(bop);
 		//button ve trang chu
-		JButton bexit = new JButton(new ImageIcon("././resources/images/bexit.png"));
+		bexit = new JButton(new ImageIcon("././resources/images/bexit.png"));
 		bexit.setBounds(1087, 10, 60, 30);
 		setEventbexit(bexit);
 		window.add(bexit);	
 		//button xin hoa
-		JButton bdrawProposal = new JButton(new ImageIcon("././resources/images/bdrawproposal.png"));
+		bdrawProposal = new JButton(new ImageIcon("././resources/images/bdrawproposal.png"));
 		bdrawProposal.setBounds(850, 95, 140, 75);
 		setEventbdrawProposal(bdrawProposal);
 		window.add(bdrawProposal);
 		//button dau hang
-		JButton bff = new JButton(new ImageIcon("././resources/images/bff.png"));
+		bff = new JButton(new ImageIcon("././resources/images/bff.png"));
 		bff.setBounds(1008, 95, 140, 75);
 		setEventbff(bff);
 		window.add(bff);
 		//player1(tam)
 		ava1 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		JPanel panel1 = plr1.setPayer1(ava1);
+		JPanel panel1 = plr1.setPayer1(ava1, userAccount.getDisplayName());
 		panel1.setLayout(null);
 		panel1.setBounds(20,595, 250, 100);
 		window.add(panel1);
-		
 		//player2(tam)
 		ava2 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		JPanel panel2 = plr2.setPayer2(ava2);
+		panel2 = plr2.setPayer2(ava2, "");
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);
-		
 		//board
 		board = drawBoard();
 		board.addMouseListener(new MouseListener() {
@@ -157,7 +167,6 @@ public class User_Host implements Runnable{
 			public void mouseExited(MouseEvent e) {}
 		  });
 		window.add(board);
-		
 		window.setVisible(true);
 	}
 	//
@@ -165,8 +174,18 @@ public class User_Host implements Runnable{
 	{
 		this.background=img;
 	}
+	public static void setPlayer2Info(String displayname) {
+		window.remove(panel2);
+		ava2 = new ImageIcon("././resources/images/favicon.png");
+		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
+		panel2 = plr2.setPayer2(ava2, displayname);
+		panel2.setLayout(null);
+		panel2.setBounds(560,10, 250, 100);
+		window.add(panel2);
+		window.repaint();
+	}
 	
-	public JPanel drawBoard() {
+	static public JPanel drawBoard() {
 		JPanel p1 = new JPanel() {
 			@Override
 			protected  void paintComponent(Graphics g) {
@@ -199,7 +218,7 @@ public class User_Host implements Runnable{
 		return p1;
 	}
 	
-	public void draw() {
+	public static void draw() {
 		board = drawBoard();
 		window.repaint();
 	}
@@ -207,13 +226,44 @@ public class User_Host implements Runnable{
 		//
 		// xu ly danh quan co o day
 		//
-		boardXY[i][j] = 1;
+		if (isPlayer2Joined == false) return;
+		if (isTurn == false) return;
+		if (boardXY[i][j] != 0) return;
+		isTurn = false;
+		boardXY[i][j] = XYtype;
 		draw();
 		sendStringToAllClients(Requests.XYCoordinate);
 		sendXYCoordinateToAllClients(i, j, boardXY[i][j]);
+		AnnounceIfFinish(i, j, boardXY[i][j]);
+	}
+	static public void AnnounceIfFinish(int i, int j, int value) {
+		int k = BLL.Instance().isFinishCaro5(boardXY, i, j, value);
+		if (k == 0) return;
+		else if (k == -1) {
+			sendStringToAllClients(Requests.FinishAnnounce);
+			sendStringToAllClients(Requests.Draw_GameResult);
+			PopUpMessage.infoBox("Hoà", "Kết quả");
+		}
+		else if (k == XYtype) {
+			sendStringToAllClients(Requests.FinishAnnounce);
+			//sửa lại thành displayname của host
+			sendStringToAllClients("Host");
+			PopUpMessage.infoBox("Host thắng", "Kết quả");
+		}
+		else{
+			sendStringToAllClients(Requests.FinishAnnounce);
+			//sửa lại thành displayname của người chơi
+			sendStringToAllClients("Player2");
+			PopUpMessage.infoBox("Player2 thắng", "Kết quả");
+		}
+		boardReset();
+	}
+	static void boardReset() {
+		boardXY = new int[n][n];
+		draw();
 	}
 	static public void sendXYCoordinateToAllClients(int i, int j, int type) {
-		for (Client_player c : clients) {
+		for (Client c : clients) {
 			try {
 				if (c.connectable) {
 					c.dos.writeInt(i);
@@ -228,7 +278,7 @@ public class User_Host implements Runnable{
 		}
 	}
 	static public void sendStringToAllClients(String s) {
-		for (Client_player c : clients) {
+		for (Client c : clients) {
 			try {
 				if (c.connectable) {
 					c.dos.writeUTF(s);
@@ -240,14 +290,27 @@ public class User_Host implements Runnable{
 			}
 		}
 	}
+	private void sendStringToPlayer2(String s) {
+		for (Client c : clients) {
+			if (c.isPlayer2 && c.connectable) {
+				try {
+					c.dos.writeUTF(s);
+				}
+				catch(Exception e) {
+					c.connectable = false;
+				}
+			}
+		}
+	}
 	
 	//set Event
 	public void setEventbsend(JButton bsend) {
 		bsend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (tf.getText().trim().equals("")) return;
 				sendStringToAllClients(Requests.ChatMessage);
-				sendStringToAllClients(tf.getText());
-				ta.append(tf.getText());
+				sendStringToAllClients(userAccount.getDisplayName() + ": " + tf.getText());
+				ta.append(userAccount.getDisplayName() + ": " + tf.getText());
 				ta.append("\n");
 				tf.setText("");
 			}
@@ -272,7 +335,9 @@ public class User_Host implements Runnable{
 	public void setEventbdrawProposal(JButton bdrawProposal) {
 		bdrawProposal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bdrawProposal đã được nhấn!!!");
+				if (isPlayer2Joined == false) return;
+				sendStringToPlayer2(Requests.DrawProposal);
+				User_Host.bdrawProposal.setEnabled(false);
 			}
 			
 		});
@@ -280,24 +345,32 @@ public class User_Host implements Runnable{
 	public void setEventbff(JButton bff) {
 		bff.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bff đã được nhấn!!!");
+				if (isPlayer2Joined == false) return;
+				int input = JOptionPane.showConfirmDialog(null, "Xác nhận đầu hàng?");
+				if (input == 0) {
+					sendStringToAllClients(Requests.FinishAnnounce);
+					//sửa lại thành displayname của người chơi
+					sendStringToAllClients("Player2");
+					PopUpMessage.infoBox("Player2 thắng", "Kết quả");
+					boardReset();
+				}
 			}
 			
 		});
 	}
 	private void sendRoomToMainServer() {
 		try {
-			dosToMainServer.writeUTF(Requests.RoomUpdate);
-			dosToMainServer.writeInt(currentRoom.getRoomID());
-			dosToMainServer.writeUTF(currentRoom.getRoomName());
-			dosToMainServer.writeUTF(currentRoom.getPassword());
-			dosToMainServer.writeUTF(currentRoom.getHostDisplayName());
-			dosToMainServer.writeUTF(currentRoom.getHostIPAddress());
-			dosToMainServer.writeInt(currentRoom.getHostPort());
-			dosToMainServer.writeInt(currentRoom.getGameMode());
-			dosToMainServer.writeInt(currentRoom.getCurrentPlayers());
-			dosToMainServer.writeInt(currentRoom.getCurrentSpectators());
-			dosToMainServer.writeBoolean(currentRoom.isAlowSpectator());
+//			dosToMainServer.writeUTF(Requests.RoomUpdate);
+//			dosToMainServer.writeInt(currentRoom.getRoomID());
+//			dosToMainServer.writeUTF(currentRoom.getRoomName());
+//			dosToMainServer.writeUTF(currentRoom.getPassword());
+//			dosToMainServer.writeUTF(currentRoom.getHostDisplayName());
+//			dosToMainServer.writeUTF(currentRoom.getHostIPAddress());
+//			dosToMainServer.writeInt(currentRoom.getHostPort());
+//			dosToMainServer.writeInt(currentRoom.getGameMode());
+//			dosToMainServer.writeInt(currentRoom.getCurrentPlayers());
+//			dosToMainServer.writeInt(currentRoom.getCurrentSpectators());
+//			dosToMainServer.writeBoolean(currentRoom.isAlowSpectator());
 		}
 		catch(Exception e) {
 			System.out.println(e.toString());
@@ -305,13 +378,12 @@ public class User_Host implements Runnable{
 	}
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		System.out.println("Waiting...");
 		while(true) {
-			System.out.println("Waiting...");
 			try {
 				Socket sk = HostSocket.accept();
 				System.out.println("client accepted");
-				Client_player a = new Client_player(sk);
+				Client a = new Client(sk);
 				clients.add(a);
 				a.start();
 			}
@@ -327,19 +399,17 @@ public class User_Host implements Runnable{
 
 
 
-class Client_player extends Thread{
+class Client extends Thread{
 	Socket sk;
 	DataInputStream dis;
 	DataOutputStream dos;
 	boolean connectable = true;
-	public Client_player(Socket SK) {
+	boolean isPlayer2 = false;
+	public Client(Socket SK) {
 		try {
 			sk = SK;
 			dis = new DataInputStream(sk.getInputStream());
 			dos = new DataOutputStream(sk.getOutputStream());
-			//
-			// debug, lấy bàn cờ ngay khi vừa kết nối vào
-			//
 		}
 		catch(Exception e) {
 			System.out.println(e);
@@ -353,29 +423,94 @@ class Client_player extends Thread{
 				if (s.equals(Requests.XYCoordinate)) {
 					int i = dis.readInt();
 					int j = dis.readInt();
-					int type;
-					if (User_Host.isOplayer) type = 1;
-					else type = 2;
+					int type = 1;
+					if (User_Host.XYtype == 1) type = 2;
 					User_Host.boardXY[i][j] = type;
-					
+					User_Host.isTurn = true;
+					User_Host.draw();
 					User_Host.sendStringToAllClients(Requests.XYCoordinate);
 					User_Host.sendXYCoordinateToAllClients(i, j, type);
-					continue;
+					User_Host.AnnounceIfFinish(i, j, type);
 				}
-				if (s.equals(Requests.ChatMessage)) {
+				else if (s.equals(Requests.ChatMessage)) {
 					s = dis.readUTF();
 					User_Host.ta.append(s);
 					User_Host.ta.append("\n");
 					
 					User_Host.sendStringToAllClients(Requests.ChatMessage);
 					User_Host.sendStringToAllClients(s);
-					continue;
+				}
+				else if (s.equals(Requests.Player2Joined)) {
+					isPlayer2 = true;
+					User_Host.isPlayer2Joined = true;
+					String player2DisplayName = dis.readUTF();
+					User_Host.setPlayer2Info(player2DisplayName);
+					User_Host.player2DispayName = player2DisplayName;
+					dos.writeUTF(User_Host.userAccount.getDisplayName());
+					User_Host.sendStringToAllClients(Requests.SendInfos);
+					User_Host.sendStringToAllClients(User_Host.userAccount.getDisplayName());
+					User_Host.sendStringToAllClients(User_Host.player2DispayName);
+				}
+				else if (s.equals(Requests.Player2Leaved)) {
+					User_Host.isPlayer2Joined = false;
+					connectable = false;
+					//thong bao thua
+				}
+				else if (s.equals(Requests.DrawProposalRefused)) {
+					PopUpMessage.infoBox("Đối thủ từ chối lời đề nghị hoà của bạn", "Thông báo");
+					User_Host.bdrawProposal.setEnabled(true);
+				}
+				else if (s.equals(Requests.DrawProposalAccepted)) {
+					User_Host.sendStringToAllClients(Requests.FinishAnnounce);
+					User_Host.sendStringToAllClients(Requests.Draw_GameResult);
+					PopUpMessage.infoBox("Hoà", "Kết quả");
+					User_Host.boardReset();
+					User_Host.bdrawProposal.setEnabled(true);
+				}
+				else if (s.equals(Requests.DrawProposal)) {
+					int input = JOptionPane.showConfirmDialog(null, "Đối thủ xin hoà, chấp nhận?");
+					if (input == 0) {
+						User_Host.sendStringToAllClients(Requests.FinishAnnounce);
+						User_Host.sendStringToAllClients(Requests.Draw_GameResult);
+						PopUpMessage.infoBox("Hoà", "Kết quả");
+						User_Host.boardReset();
+					}
+					else {
+						dos.writeUTF(Requests.DrawProposalRefused);
+					}
+				}
+				else if (s.equals(Requests.Surrender)) {
+					User_Host.sendStringToAllClients(Requests.FinishAnnounce);
+					//sửa lại thành displayname của host
+					User_Host.sendStringToAllClients("Host");
+					PopUpMessage.infoBox("Host thắng", "Kết quả");
+					User_Host.boardReset();
+				}
+				else if (s.equals(Requests.GetBoard)) {
+					for(int i = 0; i < User_Host.n; i++) {
+						for(int j = 0; j < User_Host.n; j++) {
+							if (User_Host.boardXY[i][j] == 0) continue;
+							dos.writeUTF(Requests.XYCoordinate);
+							dos.writeInt(i);
+							dos.writeInt(j);
+							dos.writeInt(User_Host.boardXY[i][j]);
+						}
+					}
+				}
+				else if (s.equals(Requests.GetDisplayInfos)) {
+					dos.writeUTF(Requests.SendInfos);
+					dos.writeUTF(User_Host.userAccount.getDisplayName());
+					dos.writeUTF(User_Host.player2DispayName);
 				}
 			}
 		}
 		catch(Exception e) {
-			System.out.println(e);
+			System.out.println(sk.getRemoteSocketAddress().toString() + " disconnected");
 			connectable = false;
+			if (isPlayer2) {
+				User_Host.isPlayer2Joined = false;
+				//thong bao thua
+			}
 		}
 	}
 }

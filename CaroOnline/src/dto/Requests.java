@@ -8,4 +8,19 @@ public class Requests {
 	public static String SaveBattleLog = "#rq05";
 	public static String XYCoordinate = "#rq06";
 	public static String ChatMessage = "#rq07";
+	public static String GetRoomList = "#rq08";
+	public static String Player2Joined = "#rq09";
+	public static String Player2Leaved = "#rq10";
+	public static String FinishAnnounce = "#rq11";
+	public static String Draw_GameResult = "#rq12";
+	public static String DrawProposal = "#rq13";
+	public static String DrawProposalAccepted = "#rq14";
+	public static String DrawProposalRefused = "#rq15";
+	public static String Surrender = "#rq16";
+	public static String GetBoard = "#rq17";
+	public static String GetDisplayInfos = "#rq18";
+	public static String SendInfos = "#rq19";
+	public static String CreateRoom = "#rq99";
+	public static String GetAllRoom = "#rp98";
+	public static String GetRoom = "#rp97";
 }

@@ -7,21 +7,26 @@ public class Room {
 	String HostDisplayName;     //unchangeable
 	String HostIPAddress = "localhost";       //unchangeable
 	int HostPort = 16969;               //unchangeable
-	int GameMode;
 	int CurrentPlayers = 0;
 	int CurrentSpectators = 0;
-	boolean AlowSpectator;
-	public Room(int roomID, String roomName, String password, String hostDisplayName, String hostIPAddress,
-			int hostPort, int gameMode, boolean alowSpectator) {
+	//
+	String Mode;
+	String AlowSpectator_String;
+	String JoinButton;
+	
+	public Room(int _roomID, String _RoomName, String _Password, String _hostDisplayName, String _hostIPAddress, 
+			String _mode, String _AlowSpectator) {
 		super();
-		RoomID = roomID;
-		RoomName = roomName;
-		Password = password;
-		HostDisplayName = hostDisplayName;
-		HostIPAddress = hostIPAddress;
-		HostPort = hostPort;
-		GameMode = gameMode;
-		AlowSpectator = alowSpectator;
+		RoomID = _roomID;
+		RoomName = _RoomName;
+		Password = _Password;
+		HostDisplayName = _hostDisplayName;
+		HostIPAddress = _hostIPAddress;
+		CurrentPlayers = 1;
+		CurrentSpectators = 0;
+		Mode = _mode;
+		AlowSpectator_String = _AlowSpectator;
+		JoinButton = "THAM GIA "+ _roomID;
 	}
 	public int getRoomID() {
 		return RoomID;
@@ -59,12 +64,6 @@ public class Room {
 	public void setHostPort(int hostPort) {
 		HostPort = hostPort;
 	}
-	public int getGameMode() {
-		return GameMode;
-	}
-	public void setGameMode(int gameMode) {
-		GameMode = gameMode;
-	}
 	public int getCurrentPlayers() {
 		return CurrentPlayers;
 	}
@@ -77,18 +76,26 @@ public class Room {
 	public void setCurrentSpectators(int currentSpectators) {
 		CurrentSpectators = currentSpectators;
 	}
-	public boolean isAlowSpectator() {
-		return AlowSpectator;
-	}
-	public void setAlowSpectator(boolean alowSpectator) {
-		AlowSpectator = alowSpectator;
-	}
 	@Override
 	public String toString() {
 		return "Room [RoomID=" + RoomID + ", RoomName=" + RoomName + ", Password=" + Password + ", HostDisplayName="
 				+ HostDisplayName + ", HostIPAddress=" + HostIPAddress + ", HostPort=" + HostPort + ", GameMode="
-				+ GameMode + ", CurrentPlayers=" + CurrentPlayers + ", CurrentSpectators=" + CurrentSpectators
-				+ ", AlowSpectator=" + AlowSpectator + "]";
+				+ Mode + ", CurrentPlayers=" + CurrentPlayers + ", CurrentSpectators=" + CurrentSpectators
+				+ ", AlowSpectator=" + AlowSpectator_String + "]";
 	}
-	
+	public String getMode() {
+		return Mode;
+	}
+	public void setMode(String _mode) {
+		Mode = _mode;
+	}
+	public String getAlowSpectator_String() {
+		return AlowSpectator_String;
+	}
+	public void setAlowSpectator_String(String _aspec) {
+		AlowSpectator_String = _aspec;
+	}
+	public String getJoinButton() {
+		return JoinButton;
+	}
 }
