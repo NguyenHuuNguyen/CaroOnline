@@ -1,11 +1,15 @@
 package gui;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -20,7 +24,7 @@ import dto.Requests;
 import dto.Responses;
 import dto.Room;
 
-public class Menu{
+public class Menu {
 	public static void main(String[] args) {
 //		try {
 //			JFrame b = new JFrame();
@@ -39,6 +43,7 @@ public class Menu{
 	Socket skToMainServer;
 	DataInputStream dis;
 	DataOutputStream dos;
+	JFrame jf;
 	String username;
 	
 	ImageIcon backgroundmn;
@@ -48,20 +53,23 @@ public class Menu{
 	JFrame window = new JFrame();
 	Vector vtData = new Vector();
 	Vector vtHeader = new Vector();
+	Menu m;
 	JTable tb_room;
-	public Menu(Socket sk, JFrame jf, String _username) {
+	Room room;
+	public Menu(Socket sk, JFrame _jf, String _username) {
 		if (sk != null)
 			try {
 				skToMainServer = sk;
 				username = _username;
+				jf = _jf;
 				dis = new DataInputStream(sk.getInputStream());
 				dos = new DataOutputStream(sk.getOutputStream());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		
+		m = this;
 		backgroundmn = null;
-		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		window.setResizable(false);
 		window.setSize(1180,740);
 		window.setLocationRelativeTo(null);
@@ -153,7 +161,7 @@ public class Menu{
 		// khong cho chinh kich thuoc(ko thanh cong)
 		
 		//
-		window.setTitle("Cờ Caro");
+		window.setTitle("Cờ Caro"+username);
 		window.setVisible(true);
 	}
 	public void setBackground(ImageIcon img)
@@ -163,7 +171,14 @@ public class Menu{
 	public void setEventblogout(JButton blogout) {
 		blogout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("blogout đã được nhấn!!!");
+				//System.out.println("blogout đã được nhấn!!!");
+				jf.setVisible(true);
+				try {
+					dos.writeUTF(Requests.Logout);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				window.dispose();
 			}		
 		});
 	}
@@ -178,7 +193,7 @@ public class Menu{
 		bcreate_room.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//System.out.println("bcreate_room đã được nhấn!!!");
-				new Create_Room(skToMainServer, username,window);
+				new Create_Room(skToMainServer,window, m, username);
 			}		
 		});
 	}
@@ -252,4 +267,24 @@ public class Menu{
 		window.add(add_tb);
 	}
 	// thêm hàm tạo phòng, vd: void createRoom(id room) { new ....}
+	public void goToRoom_Host(int iD) {
+		room.setRoomID(iD);
+		try {
+			room.setRoomName(dis.readUTF());
+			room.setPassword(dis.readUTF());
+			room.setHostDisplayName(dis.readUTF());
+			room.setHostIPAddress(dis.readUTF());
+			room.setCurrentPlayers(dis.read());
+			//room.set
+		}
+		catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		new User_Host(skToMainServer, window, iD, username);
+		window.setVisible(false);
+	}
+	public void goToRoom_Player(int ID) {
+		//new User_Player(skToMainServer, window, ID, username);
+		window.setVisible(false);
+	}
 }

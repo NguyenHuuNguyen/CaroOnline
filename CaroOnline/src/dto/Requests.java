@@ -22,5 +22,6 @@ public class Requests {
 	public static String SendInfos = "#rq19";
 	public static String CreateRoom = "#rq99";
 	public static String GetAllRoom = "#rp98";
-	public static String GetRoom = "#rp97";
+	public static String GetRoomByName = "#rp97";
+	public static String GetRoomByID = "#rq96";
 }

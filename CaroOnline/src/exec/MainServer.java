@@ -81,8 +81,11 @@ class CaroClient extends Thread{
 				else if(s.equals(Requests.GetAllRoom)) {
 					getAllRoom();
 				}
-				else if(s.equals(Requests.GetRoom)) {
-					getRoom();
+				else if(s.equals(Requests.GetRoomByName)) {
+					getIDRoomByName();
+				}
+				else if(s.equals(Requests.GetRoomByID)) {
+					getRoomByID();
 				}
 				else dos.writeUTF(Responses.BadRequest);
 			}
@@ -121,7 +124,6 @@ class CaroClient extends Thread{
 	private void logoutRequest() throws Exception
 	{
 		DAL.Instance().setAccountStatus(user.getId_user(), false);
-		sk.close();
 	}
 	private void createRoom() throws Exception{
 		// TODO Auto-generated method stub
@@ -153,12 +155,30 @@ class CaroClient extends Thread{
 		}
 		dos.writeUTF(Responses.Theend);
 	}
-	private void getRoom() throws Exception{
+	private void getIDRoomByName() throws Exception{
 		// TODO Auto-generated method stub
 		String roomname = dis.readUTF();
 		for (Room i : MainServer.vtRoom) {
 			if (i.getRoomName().equals(roomname)) {
 				dos.write(i.getRoomID());
+			}
+		}
+	}
+	private void getRoomByID() throws Exception{
+		// TODO Auto-generated method stub
+		int roomid = dis.read();
+		for (Room i : MainServer.vtRoom) {
+			if (i.getRoomID() == roomid) {
+				dos.write(i.getRoomID());
+				dos.writeUTF(i.getRoomName());
+				dos.writeUTF(i.getPassword());
+				dos.writeUTF(i.getHostDisplayName());
+				dos.writeUTF(i.getHostIPAddress());
+				dos.write(i.getCurrentPlayers());
+				dos.write(i.getCurrentSpectators());
+				dos.writeUTF(i.getMode());
+				dos.writeUTF(i.getAlowSpectator_String());
+				dos.writeUTF(i.getJoinButton());
 			}
 		}
 	}

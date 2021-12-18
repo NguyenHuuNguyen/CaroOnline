@@ -43,7 +43,7 @@ public class Login{
 	public Login() {
 		createConnection();
 		backgroundlo = null;
-		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setResizable(false);
 		window.setSize(1180,740);
 		window.setLocationRelativeTo(null);

@@ -45,7 +45,7 @@ public class ButtonEditor extends DefaultCellEditor {
  
   public Object getCellEditorValue() {
     if (isPushed)  {
-    	JOptionPane.showMessageDialog(button ,label + ": Ouch!");
+    	JOptionPane.showMessageDialog(button ,label.substring(9) + ": Ouch!");
     	System.out.println(label + ": Ouch!");
     }
     isPushed = false;

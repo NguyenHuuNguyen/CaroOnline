@@ -29,7 +29,7 @@ public class Create_Room {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-		new Create_Room(null,null,null);
+		new Create_Room(null,null,null,null);
 		
 	}
 	Socket skToMainServer;
@@ -37,6 +37,7 @@ public class Create_Room {
 	DataOutputStream dos;
 	String username;
 	JFrame jf_mn;
+	Menu menu;
 	
 	JFrame window = new JFrame();
 	JPanel pcr;
@@ -47,11 +48,12 @@ public class Create_Room {
 	JRadioButton rd_cr3 = new JRadioButton("Caro 3", false);
 	JRadioButton rd_yes = new JRadioButton("Có", true);
 	JRadioButton rd_no = new JRadioButton("Không", false);	
-	public Create_Room(Socket _sk, String _username, JFrame jf) { // sửa ở đây
+	public Create_Room(Socket _sk, JFrame jf,Menu _menu, String _username) { // sửa ở đây
 		if (_sk != null)
 			try {
 				skToMainServer = _sk;
 				jf_mn = jf;
+				menu = _menu;
 				username = _username;
 				dis = new DataInputStream(_sk.getInputStream());
 				dos = new DataOutputStream(_sk.getOutputStream());
@@ -158,15 +160,13 @@ public class Create_Room {
 					String s = dis.readUTF();
 					if (s.equals(Responses.RoomCreate_Success)) {
 						System.out.println("Tao phong thanh cong");
-						dos.writeUTF(Requests.GetRoom);
+						dos.writeUTF(Requests.GetRoomByName);
 						dos.writeUTF(cr_roomname.getText());
-						int ID = dis.readInt();
-						//new User_Host(skToMainServer, jf_mn,ID,username );
-						// gọi đến menu
-						// window.dispose
-						jf_mn.setVisible(false);
+						int ID = dis.read();
+						System.out.println(ID);
+						menu.goToRoom_Host(ID);
+						System.out.println(ID);
 						window.dispose();
-						return;
 					}
 					if (s.equals(Responses.RoomCreate_Fail)) {
 						PopUpMessage.infoBox("Tên Phòng trống!!!", "Lỗi");
