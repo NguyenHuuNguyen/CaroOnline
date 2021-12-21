@@ -25,7 +25,7 @@ import dto.Room;
 public class User_Spectator implements Runnable{
 
 	public static void main(String[] args) {
-		User_Spectator a = new User_Spectator(new Socket(), null, "localhost", 16969, null); 
+		User_Spectator a = new User_Spectator(new Socket(), null, null, null); 
 		Thread t = new Thread(a);
 		t.start();
 	}
@@ -58,18 +58,21 @@ public class User_Spectator implements Runnable{
 	DataOutputStream dosToHost;
 	
 	Account userAccount;
+	Room currentRoom = null;
 	int[][] boardXY = new int[n][n];
 	
-	public User_Spectator(Socket sk, JFrame jf, String hostname, int port, String username){
-		userAccount = new Account(port, hostname, hostname, false, hostname, port, port);
-		userAccount.setDisplayName("Spectator");
+	public User_Spectator(Socket sk, JFrame jf, Room _room, Account _account){
+		userAccount = new Account(0, null, null, false, null, 0, 0);
+		//userAccount.setDisplayName("Spectator");
 		
 		if (sk != null)
 			try {
 //				skToMainServer = sk;
 //				dis = new DataInputStream(sk.getInputStream());
 //				dos = new DataOutputStream(sk.getOutputStream());	
-				skToHost = new Socket(hostname, port);
+				currentRoom = _room;
+				userAccount = _account;
+				skToHost = new Socket(currentRoom.getHostIPAddress(), currentRoom.getHostPort());
 				disToHost = new DataInputStream(skToHost.getInputStream());
 				dosToHost = new DataOutputStream(skToHost.getOutputStream());
 			} catch (Exception e) {
@@ -79,7 +82,7 @@ public class User_Spectator implements Runnable{
 		window.setTitle("Cờ Caro - khán giả");
 		background = null;
 		ta.setEditable(false);
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		window.setResizable(false);
 		window.setSize(1180,740);
 		window.setLocationRelativeTo(null);

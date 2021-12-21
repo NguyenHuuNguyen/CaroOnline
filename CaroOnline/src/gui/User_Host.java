@@ -26,7 +26,7 @@ import dto.Room;
 public class User_Host implements Runnable{
 
 	public static void main(String[] args) {
-		User_Host a = new User_Host(new Socket(), null, 0, ""); 
+		User_Host a = new User_Host(new Socket(), null, null,null); 
 		Thread t = new Thread(a);
 		t.start();
 	}
@@ -63,19 +63,20 @@ public class User_Host implements Runnable{
 	Room currentRoom = null;
 	ServerSocket HostSocket = null;
 	
-	public User_Host(Socket sk, JFrame jf, int idRoom, String username){
+	public User_Host(Socket sk, JFrame jf, Room _room, Account _account){
 		userAccount = new Account(0, null, null, isTurn, null, 0, 0);
-		userAccount.setDisplayName("Host");
+		//userAccount.setDisplayName("Host");
 		
 		if (sk != null)
 			try {
 //				skToMainServer = sk;
 //				dis = new DataInputStream(sk.getInputStream());
 //				dos = new DataOutputStream(sk.getOutputStream());
-//				
-//				currentRoom = room;
+				userAccount = _account;
+				currentRoom = _room;
 //				sendRoomToMainServer();
 				HostSocket = new ServerSocket(16969);
+				System.out.println(userAccount.toString());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -450,6 +451,7 @@ class Client extends Thread{
 					User_Host.sendStringToAllClients(Requests.SendInfos);
 					User_Host.sendStringToAllClients(User_Host.userAccount.getDisplayName());
 					User_Host.sendStringToAllClients(User_Host.player2DispayName);
+					System.out.println(User_Host.userAccount.getDisplayName());
 				}
 				else if (s.equals(Requests.Player2Leaved)) {
 					User_Host.isPlayer2Joined = false;

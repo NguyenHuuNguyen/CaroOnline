@@ -1,6 +1,11 @@
 package dto;
 
 public class Requests {
+	public static String ChangePass = "#rq91";
+	public static String AddCurrentSpectator = "#rq92";
+	public static String AddCurrentPlayer = "#rq93";
+	public static String ChangeDisplayName = "#rq94";
+	public static String GetAccountbyUsername = "#rq95";
 	public static String Login = "#rq01";
 	public static String Logout = "#rq02";
 	public static String GetRooms = "#rq03";

@@ -8,8 +8,8 @@ import java.sql.ResultSet;
 import dto.Account;
 
 public class DAL {
-	String url = "jdbc:mysql://localhost:3306/caro_pbl4";
-	//String url = "jdbc:mysql://127.0.0.1:3307/caro_pbl4";
+	//String url = "jdbc:mysql://localhost:3306/caro_pbl4";
+	String url = "jdbc:mysql://127.0.0.1:3307/caro_pbl4";
 	String user = "root";
 	String password = "";
 	private Connection conn = null;
@@ -111,7 +111,43 @@ public class DAL {
 		    try { conn.close(); } catch (Exception e) { /* Ignored */ }
 		}
 	}
-	
+	//
+	public void changeDisplayNameUser(String display_name, int id_user) {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			conn = DriverManager.getConnection(url, user, password);
+			ps = conn.prepareStatement("update account set display_name = ? where id_user = ?");
+			ps.setString(1, display_name);
+			ps.setInt(2, id_user);
+			ps.executeUpdate();
+		}
+		catch(Exception e) {
+			System.out.println("DataBase Error at setAccountStatus()");
+		}
+		finally {
+			try { rs.close(); } catch (Exception e) { /* Ignored */ }
+		    try { ps.close(); } catch (Exception e) { /* Ignored */ }
+		    try { conn.close(); } catch (Exception e) { /* Ignored */ }
+		}
+	}
+	public void changePassUser(String passnew, int id_user) {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			conn = DriverManager.getConnection(url, user, password);
+			ps = conn.prepareStatement("update account set password = ? where id_user = ?");
+			ps.setString(1, passnew);
+			ps.setInt(2, id_user);
+			ps.executeUpdate();
+		}
+		catch(Exception e) {
+			System.out.println("DataBase Error at setAccountStatus()");
+		}
+		finally {
+			try { rs.close(); } catch (Exception e) { /* Ignored */ }
+		    try { ps.close(); } catch (Exception e) { /* Ignored */ }
+		    try { conn.close(); } catch (Exception e) { /* Ignored */ }
+		}
+	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		try {
@@ -126,4 +162,5 @@ public class DAL {
 			e.printStackTrace();
 		}
 	}
+
 }

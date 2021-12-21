@@ -25,7 +25,7 @@ import dto.Room;
 public class User_Player implements Runnable{
 
 	public static void main(String[] args) {
-		User_Player a = new User_Player(new Socket(), null, "192.168.1.12", 16969, null); 
+		User_Player a = new User_Player(new Socket(), null, null, null); 
 		Thread t = new Thread(a);
 		t.start();
 	}
@@ -59,18 +59,18 @@ public class User_Player implements Runnable{
 	DataOutputStream dosToHost;
 	
 	Account userAccount;
+	Room currentRoom = null;
 	int[][] boardXY = new int[n][n];
 	
-	public User_Player(Socket sk, JFrame jf, String hostname, int port, String username){
-		userAccount = new Account(port, hostname, hostname, false, hostname, port, port);
-		userAccount.setDisplayName("Player2");
+	public User_Player(Socket sk, JFrame jf, Room _room, Account _account){
+		userAccount = new Account(0, null, null, isTurn, null, 0, 0);
 		String hostDisplayName = "";
 		if (sk != null)
 			try {
-//				skToMainServer = sk;
-//				dis = new DataInputStream(sk.getInputStream());
-//				dos = new DataOutputStream(sk.getOutputStream());	
-				skToHost = new Socket(hostname, port);
+				currentRoom = _room;
+				userAccount = _account;
+				System.out.println(currentRoom.getHostPort());
+				skToHost = new Socket(currentRoom.getHostIPAddress(), currentRoom.getHostPort());
 				disToHost = new DataInputStream(skToHost.getInputStream());
 				dosToHost = new DataOutputStream(skToHost.getOutputStream());
 				dosToHost.writeUTF(Requests.Player2Joined);
@@ -83,7 +83,7 @@ public class User_Player implements Runnable{
 		window.setTitle("Cờ Caro - người chơi 2");
 		background = null;
 		ta.setEditable(false);
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		window.setResizable(false);
 		window.setSize(1180,740);
 		window.setLocationRelativeTo(null);

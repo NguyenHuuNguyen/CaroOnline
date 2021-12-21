@@ -97,25 +97,27 @@ public class Create_Room {
 		cr_roompass.setBounds(170,65,255,24);
 		window.add(cr_roompass);
 		//
-		JLabel lbcr3 = new JLabel("Chế độ: ");
-		lbcr3.setBounds(50,98, 100, 30);
-		lbcr3.setFont(new Font("Arial", Font.PLAIN, 16));
-		window.add(lbcr3);
+//		JLabel lbcr3 = new JLabel("Chế độ: ");
+//		lbcr3.setBounds(50,98, 100, 30);
+//		lbcr3.setFont(new Font("Arial", Font.PLAIN, 16));
+//		window.add(lbcr3);
 		//
 		ButtonGroup bg_mod = new ButtonGroup();
 		bg_mod.add(rd_cr3);
 		bg_mod.add(rd_cr5);
 		rd_cr3.setBackground(new Color(217, 246, 252));
 		rd_cr3.setFont(new Font("Arial", Font.PLAIN, 16));
-		rd_cr3.setBounds(355,105,85,20);
+		rd_cr3.setBounds(355,137,85,20);
+		rd_cr3.setVisible(false);
 		window.add(rd_cr3);
-		rd_cr5.setBounds(170,105,85,20);
+		rd_cr5.setBounds(170,137,85,20);
 		rd_cr5.setBackground(new Color(217, 246, 252));
 		rd_cr5.setFont(new Font("Arial", Font.PLAIN, 16));
+		rd_cr5.setVisible(false);
 		window.add(rd_cr5);
 		//
 		JLabel lbcr4 = new JLabel("Khán giả: ");
-		lbcr4.setBounds(50,130, 100, 30);
+		lbcr4.setBounds(50,98, 100, 30);
 		lbcr4.setFont(new Font("Arial", Font.PLAIN, 16));
 		window.add(lbcr4);
 		//
@@ -124,21 +126,35 @@ public class Create_Room {
 		bg_spectators.add(rd_no);
 		rd_yes.setBackground(new Color(217, 246, 252));
 		rd_yes.setFont(new Font("Arial", Font.PLAIN, 16));
-		rd_yes.setBounds(170,137,85,20);
+		rd_yes.setBounds(170,105,85,20);
 		window.add(rd_yes);
-		rd_no.setBounds(355,137,85,20);
+		rd_no.setBounds(355,105,85,20);
 		rd_no.setBackground(new Color(217, 246, 252));
 		rd_no.setFont(new Font("Arial", Font.PLAIN, 16));
 		window.add(rd_no);
 		//
 		JButton bcreateroom = new JButton(new ImageIcon("././resources/images/bcreateroom.png"));
-		bcreateroom.setBounds(195, 170, 100, 30);
+		bcreateroom.setBounds(75, 170, 100, 30);
 		setEventbcreateroom(bcreateroom);
 		window.add(bcreateroom);
+		//
+		JButton bexit_b = new JButton(new ImageIcon("././resources/images/bexit_b.png"));
+		bexit_b.setBounds(325, 170, 100, 30);
+		setEventCancel(bexit_b);
+		window.add(bexit_b);
 		//
 		window.setContentPane(pcr);
 		window.setTitle("Cờ Caro");
 		window.setVisible(true);
+	}
+	private void setEventCancel(JButton bexit_b) {
+		bexit_b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				window.dispose();
+				return;
+			}
+		});
+		
 	}
 	public void setBackground(ImageIcon img)
 	{
@@ -159,17 +175,18 @@ public class Create_Room {
 					else dos.writeUTF("Không");
 					String s = dis.readUTF();
 					if (s.equals(Responses.RoomCreate_Success)) {
-						System.out.println("Tao phong thanh cong");
 						dos.writeUTF(Requests.GetRoomByName);
 						dos.writeUTF(cr_roomname.getText());
 						int ID = dis.read();
-						System.out.println(ID);
 						menu.goToRoom_Host(ID);
-						System.out.println(ID);
 						window.dispose();
 					}
 					if (s.equals(Responses.RoomCreate_Fail)) {
 						PopUpMessage.infoBox("Tên Phòng trống!!!", "Lỗi");
+						return;
+					}
+					if (s.equals(Responses.RoomName_Have)) {
+						PopUpMessage.infoBox("Tên Phòng đã tồn tại!!!", "Lỗi");
 						return;
 					}
 				}

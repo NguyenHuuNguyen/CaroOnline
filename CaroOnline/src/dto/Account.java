@@ -24,6 +24,14 @@ public class Account {
 		BattleLost = battleLost;
 	}
 
+	public String getPassword() {
+		return Password;
+	}
+
+	public void setPassword(String password) {
+		Password = password;
+	}
+
 	@Override
 	public String toString() {
 		return "Account [id_user=" + id_user + ", Username=" + Username + ", Password=" + Password + ", Status="

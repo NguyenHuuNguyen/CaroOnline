@@ -16,9 +16,11 @@ public class ButtonEditor extends DefaultCellEditor {
   protected JButton button;
   private String    label;
   private boolean   isPushed;
+  Menu menu;
  
-  public ButtonEditor(JCheckBox checkBox) {
+  public ButtonEditor(JCheckBox checkBox, Menu _menu) {
     super(checkBox);
+    menu = _menu;
     button = new JButton();
     button.setOpaque(true);
     button.addActionListener(new ActionListener() {
@@ -45,8 +47,9 @@ public class ButtonEditor extends DefaultCellEditor {
  
   public Object getCellEditorValue() {
     if (isPushed)  {
-    	JOptionPane.showMessageDialog(button ,label.substring(9) + ": Ouch!");
-    	System.out.println(label + ": Ouch!");
+    	//JOptionPane.showMessageDialog(button ,label.substring(9) + ": Ouch!");
+    	//System.out.println(Integer.parseInt(label.trim().substring(9))+"");
+    	menu.goToRoom_Player(Integer.parseInt(label.trim().substring(9)));
     }
     isPushed = false;
     return new String( label ) ;
