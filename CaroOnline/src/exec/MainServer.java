@@ -2,6 +2,7 @@ package exec;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
@@ -55,7 +56,9 @@ class CaroClient extends Thread{
 			dis = new DataInputStream(sk.getInputStream());
 			dos = new DataOutputStream(sk.getOutputStream());
 			//c = sk.getRemoteSocketAddress().toString();
-			ip_address = sk.getInetAddress().getLocalHost().getHostAddress();
+			//ip_address = sk.getInetAddress().getLocalHost().getHostAddress();
+			InetSocketAddress socketAddress = (InetSocketAddress) sk.getRemoteSocketAddress();
+			ip_address = socketAddress.getAddress().getHostAddress();
 			System.out.println(ip_address + " connected");
 		}
 		catch(Exception e) {

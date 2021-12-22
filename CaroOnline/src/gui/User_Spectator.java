@@ -268,7 +268,6 @@ public class User_Spectator implements Runnable{
 	@Override
 	public void run() {
 		try {
-			dosToHost.writeUTF(Requests.GetBoard);
 			dosToHost.writeUTF(Requests.GetDisplayInfos);
 			while (isrun){
 				String s = disToHost.readUTF();
@@ -300,6 +299,7 @@ public class User_Spectator implements Runnable{
 					setPlayer1Info(hostDisplayName);
 					setPlayer2Info(Player2DisplayName);
 					boardReset();
+					dosToHost.writeUTF(Requests.GetBoard);
 				}
 				else if (s.equals(Requests.HostDisconnected)) {
 					PopUpMessage.infoBox("Chủ phòng đã đóng kết nối", "Thông báo");
