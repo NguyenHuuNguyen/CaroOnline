@@ -55,6 +55,7 @@ public class Menu {
 	Vector vtData = new Vector();
 	Vector vtHeader = new Vector();
 	Menu m;
+	JPanel add_tb = new JPanel();
 	JTable tb_room = new JTable();
 	Room room = new Room(0, "", "", "", "",0,"","");
 	Account account = new Account(0,"","",false,"",0,0);
@@ -161,6 +162,13 @@ public class Menu {
 		setEventbsearch(bsearch);
 		window.add(bsearch);
 		//table
+		vtHeader.add("ID");
+		vtHeader.add("TÊN PHÒNG");
+		vtHeader.add("MẬT KHẨU");
+		//vtHeader.add("CHẾ ĐỘ");
+		vtHeader.add("KHÁN GIẢ");
+		vtHeader.add("THAM GIA");
+		window.add(add_tb);
 		setTableData();
 		window.add(lbmn_if1);
 		window.add(lbmn_if2);
@@ -171,7 +179,7 @@ public class Menu {
 		// khong cho chinh kich thuoc(ko thanh cong)
 		
 		//
-		window.setTitle("Cờ Caro"+username);
+		window.setTitle("Cờ Caro - "+username);
 		window.setVisible(true);
 	}
 	public void setBackground(ImageIcon img)
@@ -195,7 +203,7 @@ public class Menu {
 	public void setEventbsearch(JButton bsearch) {
 		bsearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bsearch đã được nhấn!!!");
+				setTableData();
 			}		
 		});
 	}
@@ -237,17 +245,11 @@ public class Menu {
 		window.add(lbmn_if3);
 	}
 	public void setTableData() {
+		window.remove(add_tb);
+		add_tb = new JPanel();
 		tb_room = new JTable();
-		JPanel add_tb = new JPanel();
+		vtData = new Vector();
 		add_tb.setLayout(null);
-		//test_tb.setSize(500,500);
-		vtHeader.add("ID");
-		vtHeader.add("TÊN PHÒNG");
-		vtHeader.add("MẬT KHẨU");
-		//vtHeader.add("CHẾ ĐỘ");
-		vtHeader.add("KHÁN GIẢ");
-		vtHeader.add("THAM GIA");
-		//
 		Vector element;
 		try {
 			dos.writeUTF(Requests.GetAllRoom);
@@ -339,6 +341,7 @@ public class Menu {
 				User_Spectator a = new User_Spectator(skToMainServer, window, room, account);
 				Thread t = new Thread(a);
 				t.start();
+				window.setVisible(false);
 			}
 		}
 	}

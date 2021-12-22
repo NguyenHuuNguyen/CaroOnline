@@ -25,6 +25,8 @@ public class Requests {
 	public static String GetBoard = "#rq17";
 	public static String GetDisplayInfos = "#rq18";
 	public static String SendInfos = "#rq19";
+	public static String HostDisconnected = "#rq20";
+	public static String Player2Disconnected = "#rq21";
 	public static String CreateRoom = "#rq99";
 	public static String GetAllRoom = "#rp98";
 	public static String GetRoomByName = "#rp97";

@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
@@ -30,7 +31,9 @@ public class User_Spectator implements Runnable{
 		t.start();
 	}
 	
+	boolean isrun = true;
 	JFrame window = new JFrame();
+	JFrame menu = null;
 	JPanel board = null;
 	
 	static int n = 15;
@@ -62,14 +65,9 @@ public class User_Spectator implements Runnable{
 	int[][] boardXY = new int[n][n];
 	
 	public User_Spectator(Socket sk, JFrame jf, Room _room, Account _account){
-		userAccount = new Account(0, null, null, false, null, 0, 0);
-		//userAccount.setDisplayName("Spectator");
-		
+		menu = jf;
 		if (sk != null)
-			try {
-//				skToMainServer = sk;
-//				dis = new DataInputStream(sk.getInputStream());
-//				dos = new DataOutputStream(sk.getOutputStream());	
+			try {	
 				currentRoom = _room;
 				userAccount = _account;
 				skToHost = new Socket(currentRoom.getHostIPAddress(), currentRoom.getHostPort());
@@ -82,7 +80,7 @@ public class User_Spectator implements Runnable{
 		window.setTitle("Cờ Caro - khán giả");
 		background = null;
 		ta.setEditable(false);
-		window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		window.setResizable(false);
 		window.setSize(1180,740);
 		window.setLocationRelativeTo(null);
@@ -123,7 +121,7 @@ public class User_Spectator implements Runnable{
 		//button ve trang chu
 		bexit = new JButton(new ImageIcon("././resources/images/bexit.png"));
 		bexit.setBounds(1087, 10, 60, 30);
-		setEventbexit(bexit);
+		setEventbexit(bexit, jf);
 		window.add(bexit);	
 //		//button xin hoa
 //		bdrawProposal = new JButton(new ImageIcon("././resources/images/bdrawproposal.png"));
@@ -250,12 +248,21 @@ public class User_Spectator implements Runnable{
 			
 		});
 	}
-	public void setEventbexit(JButton bexit) {
+	public void setEventbexit(JButton bexit, JFrame jf) {
 		bexit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bexit đã được nhấn!!!");
+				int input = JOptionPane.showConfirmDialog(null, "Xác nhận thoát trận?");
+				if (input == 0) {
+					jf.setVisible(true);
+					window.dispose();
+					isrun = false;
+					try {
+						skToHost.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
 			}
-			
 		});
 	}
 	@Override
@@ -263,7 +270,7 @@ public class User_Spectator implements Runnable{
 		try {
 			dosToHost.writeUTF(Requests.GetBoard);
 			dosToHost.writeUTF(Requests.GetDisplayInfos);
-			while (true){
+			while (isrun){
 				String s = disToHost.readUTF();
 				if (s.equals(Requests.XYCoordinate)) {
 					int i = disToHost.readInt();
@@ -292,6 +299,19 @@ public class User_Spectator implements Runnable{
 					String Player2DisplayName = disToHost.readUTF();
 					setPlayer1Info(hostDisplayName);
 					setPlayer2Info(Player2DisplayName);
+					boardReset();
+				}
+				else if (s.equals(Requests.HostDisconnected)) {
+					PopUpMessage.infoBox("Chủ phòng đã đóng kết nối", "Thông báo");
+					menu.setVisible(true);
+					window.dispose();
+					isrun = false;
+				}
+				else if (s.equals(Requests.Player2Disconnected)) {
+					String player2DisplayName = disToHost.readUTF();
+					PopUpMessage.infoBox("Người chơi "+player2DisplayName+" đã đóng kết nối", "Thông báo");
+					boardReset();
+					setPlayer2Info("");
 				}
 			}
 		}

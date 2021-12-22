@@ -8,8 +8,8 @@ import java.sql.ResultSet;
 import dto.Account;
 
 public class DAL {
-	//String url = "jdbc:mysql://localhost:3306/caro_pbl4";
-	String url = "jdbc:mysql://127.0.0.1:3307/caro_pbl4";
+	String url = "jdbc:mysql://localhost:3306/caro_pbl4";
+	//String url = "jdbc:mysql://127.0.0.1:3307/caro_pbl4";
 	String user = "root";
 	String password = "";
 	private Connection conn = null;
