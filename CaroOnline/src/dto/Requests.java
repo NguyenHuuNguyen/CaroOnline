@@ -1,6 +1,7 @@
 package dto;
 
 public class Requests {
+	public static String CreateNewUser = "#rq90";
 	public static String ChangePass = "#rq91";
 	public static String AddCurrentSpectator = "#rq92";
 	public static String AddCurrentPlayer = "#rq93";

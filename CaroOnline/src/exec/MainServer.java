@@ -112,6 +112,9 @@ class CaroClient extends Thread{
 				else if(s.equals(Requests.HostDisconnected)) {
 					HostDisconnected();
 				}
+				else if(s.equals(Requests.CreateNewUser)) {
+					createNewUser();
+				}
 				else dos.writeUTF(Responses.BadRequest);
 			}
 		}
@@ -126,6 +129,18 @@ class CaroClient extends Thread{
 				sk.close();
 			}
 			catch (Exception e1){}
+		}
+	}
+	private void createNewUser() throws Exception{
+		String username = dis.readUTF();
+		String displayname = dis.readUTF();
+		String password = dis.readUTF();
+		String tb = BLL.Instance().createNewUser(username, displayname, password);
+		if (tb.equals("ok")) {
+			dos.writeUTF(Responses.UserCreate_Success);
+		}
+		else if (tb.equals("no")) {
+			dos.writeUTF(Responses.UserCreate_Fail);
 		}
 	}
 	private void HostDisconnected() throws Exception {

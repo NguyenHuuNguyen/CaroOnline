@@ -103,7 +103,7 @@ public class ChangePass {
 		cp_passnew2.setBounds(230,97,205,24);
 		window.add(cp_passnew2);
 		//
-		JButton bchangepass = new JButton(new ImageIcon("././resources/images/bcreateroom.png"));
+		JButton bchangepass = new JButton(new ImageIcon("././resources/images/bchangepass.png"));
 		bchangepass.setBounds(75, 145, 100, 30);
 		setEventbchangepass(bchangepass);
 		window.add(bchangepass);
