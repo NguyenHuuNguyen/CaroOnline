@@ -77,7 +77,7 @@ public class User_Spectator implements Runnable{
 				e.printStackTrace();
 			}
 		
-		window.setTitle("Cờ Caro - khán giả");
+		window.setTitle("Cờ Caro - khán giả - " + userAccount.getDisplayName());
 		background = null;
 		ta.setEditable(false);
 		window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);

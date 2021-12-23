@@ -82,7 +82,7 @@ public class User_Player implements Runnable{
 				e.printStackTrace();
 			}
 		
-		window.setTitle("Cờ Caro - người chơi 2");
+		window.setTitle("Cờ Caro - người chơi 2 - " + userAccount.getDisplayName());
 		background = null;
 		ta.setEditable(false);
 		window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);

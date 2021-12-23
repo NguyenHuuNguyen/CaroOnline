@@ -52,8 +52,8 @@ public class User_Host implements Runnable{
 	static JButton bff;
 	
 	Socket skToMainServer;
-	DataInputStream disToMainServer;
-	DataOutputStream dosToMainServer;
+	static DataInputStream disToMainServer;
+	static DataOutputStream dosToMainServer;
 	
 	static boolean isPlayer2Joined;
 	static int XYtype = 1;
@@ -62,7 +62,7 @@ public class User_Host implements Runnable{
 	static String player2DispayName = "";
 	static Account userAccount;
 	public static Vector<Client> clients = new Vector<>();
-	Room currentRoom = null;
+	static Room currentRoom = null;
 	ServerSocket HostSocket = null;
 	
 	public User_Host(Socket sk, JFrame jf, Room _room, Account _account){
@@ -77,8 +77,8 @@ public class User_Host implements Runnable{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		
-		window.setTitle("Cờ Caro - chủ phòng");
+		boardReset();
+		window.setTitle("Cờ Caro - chủ phòng - " + userAccount.getDisplayName());
 		background = null;
 		ta.setEditable(false);
 		window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -245,14 +245,14 @@ public class User_Host implements Runnable{
 		else if (k == XYtype) {
 			sendStringToAllClients(Requests.FinishAnnounce);
 			//sửa lại thành displayname của host
-			sendStringToAllClients("Host");
-			PopUpMessage.infoBox("Host thắng", "Kết quả");
+			sendStringToAllClients(userAccount.getDisplayName());
+			PopUpMessage.infoBox(userAccount.getDisplayName()+" thắng", "Kết quả");
 		}
 		else{
 			sendStringToAllClients(Requests.FinishAnnounce);
 			//sửa lại thành displayname của người chơi
-			sendStringToAllClients("Player2");
-			PopUpMessage.infoBox("Player2 thắng", "Kết quả");
+			sendStringToAllClients(player2DispayName);
+			PopUpMessage.infoBox(player2DispayName+" thắng", "Kết quả");
 		}
 		boardReset();
 	}
@@ -332,6 +332,8 @@ public class User_Host implements Runnable{
 					isrun = false;
 					sendStringToAllClients(Requests.HostDisconnected);
 					try {
+						dosToMainServer.writeUTF(Requests.HostDisconnected);
+						dosToMainServer.write(currentRoom.getRoomID());
 						HostSocket.close();
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -359,8 +361,8 @@ public class User_Host implements Runnable{
 				if (input == 0) {
 					sendStringToAllClients(Requests.FinishAnnounce);
 					//sửa lại thành displayname của người chơi
-					sendStringToAllClients("Player2");
-					PopUpMessage.infoBox("Player2 thắng", "Kết quả");
+					sendStringToAllClients(player2DispayName);
+					PopUpMessage.infoBox(player2DispayName+" thắng", "Kết quả");
 					boardReset();
 				}
 			}
@@ -466,8 +468,8 @@ class Client extends Thread{
 				else if (s.equals(Requests.Surrender)) {
 					User_Host.sendStringToAllClients(Requests.FinishAnnounce);
 					//sửa lại thành displayname của host
-					User_Host.sendStringToAllClients("Host");
-					PopUpMessage.infoBox("Host thắng", "Kết quả");
+					User_Host.sendStringToAllClients(User_Host.userAccount.getDisplayName());
+					PopUpMessage.infoBox(User_Host.userAccount.getDisplayName()+" thắng", "Kết quả");
 					User_Host.boardReset();
 				}
 				else if (s.equals(Requests.GetBoard)) {
@@ -487,13 +489,15 @@ class Client extends Thread{
 					dos.writeUTF(User_Host.player2DispayName);
 				}
 				else if (s.equals(Requests.Player2Disconnected)) {
-					PopUpMessage.infoBox("Người chơi "+User_Host.player2DispayName+" đã đóng kết nối", "Thông báo");
 					User_Host.boardReset();
 					User_Host.isPlayer2Joined = false;
 					connectable = false;
 					User_Host.setPlayer2Info("");
 					User_Host.sendStringToAllClients(Requests.Player2Disconnected);
 					User_Host.sendStringToAllClients(User_Host.player2DispayName);
+					User_Host.dosToMainServer.writeUTF(Requests.Player2Disconnected);
+					User_Host.dosToMainServer.write(User_Host.currentRoom.getRoomID());
+					PopUpMessage.infoBox("Người chơi "+User_Host.player2DispayName+" đã đóng kết nối", "Thông báo");
 				}
 			}
 		}

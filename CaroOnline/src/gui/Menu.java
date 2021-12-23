@@ -60,8 +60,8 @@ public class Menu {
 	Room room = new Room(0, "", "", "", "",0,"","");
 	Account account = new Account(0,"","",false,"",0,0);
 	JLabel lbmn_if1 = new JLabel();
-	JLabel lbmn_if2 = new JLabel();;
-	JLabel lbmn_if3 = new JLabel();;
+	JLabel lbmn_if2 = new JLabel();
+	JLabel lbmn_if3 = new JLabel();
 	public Menu(Socket sk, JFrame _jf, String _username) {
 		if (sk != null)
 			try {
@@ -313,6 +313,11 @@ public class Menu {
 	public void goToRoom_Player(int ID) {
 		System.out.println(ID);
 		room = menuGetRoom(ID);
+		if (room == null) {
+			PopUpMessage.infoBox("Phòng không còn tồn tại", "Thông báo");
+			setTableData();
+			return;
+		}
 		System.out.println(room.getCurrentPlayers());
 		if (room.getCurrentPlayers() < 2) {
 			account = menuGetAccount(username);
@@ -346,10 +351,13 @@ public class Menu {
 		}
 	}
 	public Room menuGetRoom(int id) {
+		room = new Room(0, "", "", "", "",0,"","");
 		room.setRoomID(id);
 		try {
 			dos.writeUTF(Requests.GetRoomByID);
 			dos.write(id);
+			String ans = dis.readUTF();
+			if (ans.equals(Requests.RoomDoNotExist)) return null;
 			room.setRoomName(dis.readUTF());
 			room.setPassword(dis.readUTF());
 			room.setHostDisplayName(dis.readUTF());

@@ -106,6 +106,12 @@ class CaroClient extends Thread{
 				else if(s.equals(Requests.ChangePass)) {
 					changePassUser();
 				}
+				else if(s.equals(Requests.Player2Disconnected)) {
+					Player2Disconnected();
+				}
+				else if(s.equals(Requests.HostDisconnected)) {
+					HostDisconnected();
+				}
 				else dos.writeUTF(Responses.BadRequest);
 			}
 		}
@@ -122,8 +128,24 @@ class CaroClient extends Thread{
 			catch (Exception e1){}
 		}
 	}
+	private void HostDisconnected() throws Exception {
+		int idroom = dis.read();
+		for (Room r : MainServer.vtRoom) {
+			if (r.getRoomID() == idroom) {
+				MainServer.vtRoom.remove(r);
+				break;
+			}
+				
+		}
+	}
+	private void Player2Disconnected() throws Exception {
+		int idroom = dis.read();
+		for (Room r : MainServer.vtRoom) {
+			if (r.getRoomID() == idroom)
+				r.setCurrentPlayers(r.getCurrentPlayers() - 1);
+		}
+	}
 	private void changePassUser() throws Exception{
-		// TODO Auto-generated method stub
 		String username = dis.readUTF();
 		String passold = dis.readUTF();
 		String passnew = dis.readUTF();
@@ -136,7 +158,6 @@ class CaroClient extends Thread{
 		
 	}
 	private void addCurrentSpectaror() throws Exception{
-		// TODO Auto-generated method stub
 		int id = dis.read();
 		for (Room i : MainServer.vtRoom) {
 			if (i.getRoomID() == id) {
@@ -146,9 +167,7 @@ class CaroClient extends Thread{
 		}
 	}
 	private void addCurrentPlayer() throws Exception{
-		// TODO Auto-generated method stub
 		int id = dis.read();
-		System.out.println(id);
 		for (Room i : MainServer.vtRoom) {
 			if (i.getRoomID() == id) {
 				i.setCurrentPlayers(i.getCurrentPlayers() + 1);
@@ -242,6 +261,7 @@ class CaroClient extends Thread{
 		int roomid = dis.read();
 		for (Room i : MainServer.vtRoom) {
 			if (i.getRoomID() == roomid) {
+				dos.writeUTF("ok");
 				dos.writeUTF(i.getRoomName());
 				dos.writeUTF(i.getPassword());
 				dos.writeUTF(i.getHostDisplayName());
@@ -251,7 +271,9 @@ class CaroClient extends Thread{
 				dos.writeUTF(i.getMode());
 				dos.writeUTF(i.getAlowSpectator_String());
 				//dos.writeUTF(i.getJoinButton());
+				return;
 			}
 		}
+		dos.writeUTF(Requests.RoomDoNotExist);
 	}
 }
