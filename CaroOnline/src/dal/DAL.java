@@ -80,7 +80,7 @@ public class DAL {
 			if (!rs.next()) throw new Exception("username not found");
 			return new Account(rs.getInt("id_user"), rs.getString("username"), rs.getString("password")
 					, rs.getBoolean("status"), rs.getString("display_name")
-					, rs.getInt("battles_won"), rs.getInt("battles_lost"));
+					, rs.getInt("battles_won"), rs.getInt("battles_lost"), rs.getInt("idAvatar"));
 		}
 		catch(Exception e) {
 			System.out.println("DataBase Error at getAccountByUsername()");
@@ -149,7 +149,7 @@ public class DAL {
 		    try { conn.close(); } catch (Exception e) { /* Ignored */ }
 		}
 	}
-	public String createNewUser(String username, String displayname, String pass) {
+	public String createNewUser(String username, String displayname, String pass, int id_ava) {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection(url, user, password);
@@ -157,10 +157,11 @@ public class DAL {
 			ps.setString(1, username);
 			ResultSet rs = ps.executeQuery();
 			if (!rs.next()) {
-				ps = conn.prepareStatement("insert into account values (0,?,?,?,false,0,0)");
+				ps = conn.prepareStatement("insert into account values (0,?,?,?,false,0,0,?)");
 				ps.setString(1, username);
 				ps.setString(2, pass);
 				ps.setString(3, displayname);
+				ps.setInt(4, id_ava);
 				ps.executeUpdate();
 				return "ok";
 			}
@@ -176,6 +177,24 @@ public class DAL {
 		}
 		return "";
 	}
+	public void changeAvatar(int id_ava, String _username) {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			conn = DriverManager.getConnection(url, user, password);
+			ps = conn.prepareStatement("update account set idAvatar = ? where username = ?");
+			ps.setInt(1, id_ava);
+			ps.setString(2, _username);
+			ps.executeUpdate();
+		}
+		catch(Exception e) {
+			System.out.println("DataBase Error at setAccountStatus()");
+		}
+		finally {
+			try { rs.close(); } catch (Exception e) { /* Ignored */ }
+		    try { ps.close(); } catch (Exception e) { /* Ignored */ }
+		    try { conn.close(); } catch (Exception e) { /* Ignored */ }
+		}
+	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		try {
@@ -190,5 +209,7 @@ public class DAL {
 			e.printStackTrace();
 		}
 	}
+
+
 
 }

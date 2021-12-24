@@ -58,10 +58,13 @@ public class Menu {
 	JPanel add_tb = new JPanel();
 	JTable tb_room = new JTable();
 	Room room = new Room(0, "", "", "", "",0,"","");
-	Account account = new Account(0,"","",false,"",0,0);
+	Account account = new Account(0,"","",false,"",0,0,0);
 	JLabel lbmn_if1 = new JLabel();
 	JLabel lbmn_if2 = new JLabel();
 	JLabel lbmn_if3 = new JLabel();
+	//
+	Menu_AvatarFrame mnava = new Menu_AvatarFrame();
+	JPanel panel3 = new JPanel();
 	public Menu(Socket sk, JFrame _jf, String _username) {
 		if (sk != null)
 			try {
@@ -96,12 +99,8 @@ public class Menu {
 		pmn.setLayout(null);
 		window.setContentPane(pmn);
 	    //Avatar
-	    Menu_AvatarFrame mnava = new Menu_AvatarFrame();
-	    ava = new ImageIcon("././resources/images/favicon.png");
-	    JPanel panel3 = mnava.setAvatar(ava);
-	    panel3.setLayout(null);
-		panel3.setBounds(50,20, 150, 150);
-		window.add(panel3);
+	    window.add(panel3);
+	    
 		//nut chinh sua thong tin
 		JButton beditinfo = new JButton(new ImageIcon("././resources/images/beditinfo.png"));
 		beditinfo.setBounds(30, 600, 190, 40);
@@ -176,7 +175,6 @@ public class Menu {
 		account = menuGetAccount(username);
 		setMenuInfoUser(account);
 		//System.out.println("Server is started");
-		// khong cho chinh kich thuoc(ko thanh cong)
 		
 		//
 		window.setTitle("Cờ Caro - "+username);
@@ -228,7 +226,9 @@ public class Menu {
 		window.remove(lbmn_if1);
 		window.remove(lbmn_if2);
 		window.remove(lbmn_if3);
-		
+		window.remove(panel3);
+		panel3 = new JPanel();
+		//
 		lbmn_if1 = new JLabel(account.getDisplayName());
 		lbmn_if1.setFont(new Font("Arial", Font.PLAIN, 20));
 		lbmn_if1.setBounds(50,210, 150, 30);
@@ -243,6 +243,12 @@ public class Menu {
 		lbmn_if3.setFont(new Font("Arial", Font.PLAIN, 20));
 		lbmn_if3.setBounds(50,290, 150, 30);
 		window.add(lbmn_if3);
+        
+		ava = new ImageIcon("././resources/avatar/"+account.getId_ava()+".png");
+		panel3 = mnava.setAvatar(ava);
+	    panel3.setLayout(null);
+		panel3.setBounds(50,20, 150, 150);
+		window.add(panel3);
 	}
 	public void setTableData() {
 		window.remove(add_tb);
@@ -314,11 +320,25 @@ public class Menu {
 		System.out.println(ID);
 		room = menuGetRoom(ID);
 		if (room == null) {
-			PopUpMessage.infoBox("Phòng không còn tồn tại", "Thông báo");
+			PopUpMessage.infoBox("Phòng không còn tồn tại", "Lỗi");
 			setTableData();
 			return;
 		}
-		System.out.println(room.getCurrentPlayers());
+		if (room.getCurrentPlayers() >= 2 && room.getAlowSpectator_String().equals("Không")) {
+			PopUpMessage.infoBox("Phòng đã đầy, không cho phép khán giả", "Lỗi");
+			return;
+		}
+		if (!room.getPassword().equals("")) {
+			String pass = JOptionPane.showInputDialog("Nhập mật khẩu:");
+			System.out.println(pass);
+			System.out.println(room.getPassword());
+			if (pass == null) return;
+			if (!pass.equals(room.getPassword())) {
+				PopUpMessage.infoBox("Sai mật khẩu", "Lỗi");
+				return;
+			}
+		}
+		//System.out.println(room.getCurrentPlayers());
 		if (room.getCurrentPlayers() < 2) {
 			account = menuGetAccount(username);
 			try {
@@ -334,7 +354,7 @@ public class Menu {
 			window.setVisible(false);
 		}
 		else if (room.getCurrentPlayers() >= 2) {
-			int input = JOptionPane.showConfirmDialog(null, "Xác nhận tham gia với tư cách khán giả?");
+			int input = JOptionPane.showConfirmDialog(null, "Phòng đầy, xác nhận tham gia với tư cách khán giả?");
 			if (input == 0) {
 				try {
 					dos.writeUTF(Requests.AddCurrentSpectator);
@@ -383,7 +403,7 @@ public class Menu {
 			account.setPassword(dis.readUTF());
 			account.setBattleLost(dis.read());
 			account.setBattleWon(dis.read());
-			
+			account.setId_ava(dis.read());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

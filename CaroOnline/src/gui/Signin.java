@@ -28,11 +28,16 @@ public class Signin{
 	ImageIcon backgroundinf;
 	JPanel pinf;
 	ImageIcon infavatar;
-	JTextField username_inf = new JTextField();
-	JTextField displayname_inf = new JTextField();
-	JPasswordField setpass1 = new JPasswordField();
-	JPasswordField setpass2 = new JPasswordField();
+	JTextField username_inf = new JTextField("");
+	JTextField displayname_inf = new JTextField("");
+	JPasswordField setpass1 = new JPasswordField("");
+	JPasswordField setpass2 = new JPasswordField("");
 	JFrame window = new JFrame();
+	Signin signin;
+	//
+	int id_ava = 0;
+	Menu_AvatarFrame infava = new Menu_AvatarFrame();
+	JPanel panel4 = new JPanel();
 	public Signin(Socket _sk) {
 		if (_sk != null)
 			try {
@@ -48,6 +53,7 @@ public class Signin{
 		window.setSize(590,740);
 		window.setLocationRelativeTo(null);
 		window.setLayout(null);
+		signin = this;
 		//thiet lap icon
 		window.setIconImage(Toolkit.getDefaultToolkit().getImage("././resources/images/favicon.png"));
 		//thiet lap background
@@ -63,12 +69,8 @@ public class Signin{
 			};
 		pinf.setLayout(null);
 		window.setContentPane(pinf);
-		Menu_AvatarFrame infava = new Menu_AvatarFrame();
-	    infavatar = new ImageIcon("././resources/images/favicon.png");
-	    JPanel panel4 = infava.setAvatar(infavatar);
-	    panel4.setLayout(null);
-		panel4.setBounds(100,120, 150, 150);
 		window.add(panel4);
+		setAvatarSignin(id_ava);
 		//button thay ava
 		JButton bset_ava = new JButton(new ImageIcon("././resources/images/bchange_ava.png"));
 		bset_ava.setBounds(300, 230, 150, 30);
@@ -121,6 +123,24 @@ public class Signin{
 		window.setTitle("Cờ Caro");
 		window.setVisible(true);
 	}
+	public void setAvatarSignin(int id_ava) {
+		window.remove(panel4);
+		panel4 = new JPanel();
+		if (id_ava == 0) {
+			infavatar = new ImageIcon("././resources/images/favicon.png");
+			panel4 = infava.setAvatar(infavatar);
+		    panel4.setLayout(null);
+			panel4.setBounds(100,120, 150, 150);
+			window.add(panel4);
+		}
+		else {
+			infavatar = new ImageIcon("././resources/avatar/"+id_ava+".png");
+			panel4 = infava.setAvatar(infavatar);
+		    panel4.setLayout(null);
+			panel4.setBounds(100,120, 150, 150);
+			window.add(panel4);
+		}
+	}
 	private void setEventCancel_Info(JButton bexit_b) {
 		bexit_b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -136,25 +156,37 @@ public class Signin{
 	public void setEventbset_ava(JButton bset_ava) {
 		bset_ava.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bset_ava đã được nhấn!!!");
+				new ListAvatar(skToMainServer, signin,null);
 			}		
 		});
 	}
 	private void setEventSignin(JButton bsignin) {
 		bsignin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (new String(setpass1.getPassword()).equals(new String(setpass2.getPassword()))) {
+				if ((username_inf.getText().equals("")) || (displayname_inf.getText().equals("")) || (new String(setpass1.getPassword()).equals(""))) {
+					PopUpMessage.infoBox("Nhập thông tin chưa đầy đủ!!", "Lỗi");
+					return;
+				}
+				else if (id_ava == 0) {
+					PopUpMessage.infoBox("Chưa chọn ảnh đại diện!!", "Lỗi");
+					return;
+				}
+				else if (new String(setpass1.getPassword()).equals(new String(setpass2.getPassword()))) {
 					try {
 						dos.writeUTF(Requests.CreateNewUser);
 						dos.writeUTF(username_inf.getText());
 						dos.writeUTF(displayname_inf.getText());
 						dos.writeUTF(new String(setpass1.getPassword()));
+						dos.write(id_ava);
 						String tb = dis.readUTF();
 						if (tb.equals(Responses.UserCreate_Success)) {
 							PopUpMessage.infoBox("Tạo tài khoản thành công, mời đăng nhập!!", "Thành công");
+							window.dispose();
+							return;
 						}
 						else if (tb.equals(Responses.UserCreate_Fail)){
 							PopUpMessage.infoBox("Tên đăng nhập đã tồn tại!!", "Lỗi");
+							return;
 						}
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
@@ -163,10 +195,8 @@ public class Signin{
 				}
 				else {
 					PopUpMessage.infoBox("Nhập mật khẩu không khớp!!", "Lỗi");
-					
+					return;
 				}
-				window.dispose();
-				return;
 			}		
 		});
 	}

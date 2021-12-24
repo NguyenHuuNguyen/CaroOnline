@@ -24,6 +24,7 @@ public class Info{
 	DataOutputStream dos;
 	Account useraccount;
 	String username;
+	int id_ava;
 	JFrame jf_mn;
 	Menu menu;
 	Info info;
@@ -33,14 +34,17 @@ public class Info{
 	ImageIcon infavatar;
 	JTextField displayname_inf = new JTextField();
 	JFrame window = new JFrame();
+	Menu_AvatarFrame infava = new Menu_AvatarFrame();
+	JPanel panel4 = new JPanel();
 	public Info(Socket _sk, JFrame _jf, Menu _menu, Account _account) {
 		if (_sk != null)
 			try {
-				useraccount = new Account(0, null, null, false, null, 0, 0);
+				useraccount = new Account(0, null, null, false, null, 0, 0,0);
 				skToMainServer = _sk;
 				jf_mn = _jf;
 				menu = _menu;
 				useraccount = _account;
+				id_ava = useraccount.getId_ava();
 				username = useraccount.getUsername();
 				dis = new DataInputStream(_sk.getInputStream());
 				dos = new DataOutputStream(_sk.getOutputStream());
@@ -69,12 +73,8 @@ public class Info{
 			};
 		pinf.setLayout(null);
 		window.setContentPane(pinf);
-		Menu_AvatarFrame infava = new Menu_AvatarFrame();
-	    infavatar = new ImageIcon("././resources/images/favicon.png");
-	    JPanel panel4 = infava.setAvatar(infavatar);
-	    panel4.setLayout(null);
-		panel4.setBounds(100,120, 150, 150);
-		window.add(panel4);
+		
+	    
 		//button thay ava
 		JButton bchange_ava = new JButton(new ImageIcon("././resources/images/bchange_ava.png"));
 		bchange_ava.setBounds(300, 230, 150, 30);
@@ -120,6 +120,7 @@ public class Info{
 		setEventCancel_Info(bexit_b);
 		window.add(bexit_b);
 		//
+		window.add(panel4);
 		setInfoUser(useraccount);
 		//
 		window.setTitle("Cờ Caro");
@@ -169,11 +170,26 @@ public class Info{
 	public void setEventbchange_ava(JButton bchange_ava) {
 		bchange_ava.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bchange_ava đã được nhấn!!!");
+				//System.out.println("bchange_ava đã được nhấn!!!");
+				new ListAvatar(skToMainServer, null,info);
+				System.out.println(id_ava);
 			}		
 		});
 	}
+	public void getId_ava(int id_ava) {
+		try {
+			dos.writeUTF(Requests.ChangeAvatar);
+			dos.writeUTF(username);
+			dos.write(id_ava);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		useraccount = menuGetAccount(username);
+		setInfoUser(useraccount);
+	}
 	public void setInfoUser(Account room) {
+		window.remove(panel4);
 		
 		JLabel lb_userid = new JLabel(room.getId_user()+"");
 		lb_userid.setFont(new Font("Arial", Font.PLAIN, 20));
@@ -195,6 +211,12 @@ public class Info{
 		lb_pass.setEnabled(false);
 		window.add(lb_pass);
 		
+		infavatar = new ImageIcon("././resources/avatar/"+room.getId_ava()+".png");
+		panel4 = infava.setAvatar(infavatar);
+	    panel4.setLayout(null);
+		panel4.setBounds(100,120, 150, 150);
+		window.add(panel4);
+		
 	}
 	public Account menuGetAccount(String _username) {
 		useraccount.setUsername(_username);
@@ -206,7 +228,7 @@ public class Info{
 			useraccount.setPassword(dis.readUTF());
 			useraccount.setBattleLost(dis.read());
 			useraccount.setBattleWon(dis.read());
-			
+			useraccount.setId_ava(dis.read());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

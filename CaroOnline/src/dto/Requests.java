@@ -1,6 +1,8 @@
 package dto;
 
 public class Requests {
+	public static String ChangeAvatar = "#rq88";
+	public static String GetAvaNumber = "#rq89";
 	public static String CreateNewUser = "#rq90";
 	public static String ChangePass = "#rq91";
 	public static String AddCurrentSpectator = "#rq92";

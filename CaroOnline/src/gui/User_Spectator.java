@@ -160,9 +160,9 @@ public class User_Spectator implements Runnable{
 	{
 		this.background=img;
 	}
-	public void setPlayer2Info(String displayname) {
+	public void setPlayer2Info(String displayname, int id_ava_p2) {
 		window.remove(panel2);
-		ava2 = new ImageIcon("././resources/images/favicon.png");
+		ava2 = new ImageIcon("././resources/avatar/"+id_ava_p2+".png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
 		panel2 = plr2.setPayer2(ava2, displayname);
 		panel2.setLayout(null);
@@ -170,9 +170,9 @@ public class User_Spectator implements Runnable{
 		window.add(panel2);
 		window.repaint();
 	}
-	public void setPlayer1Info(String displayname) {
+	public void setPlayer1Info(String displayname, int id_ava_host) {
 		window.remove(panel1);
-		ava1 = new ImageIcon("././resources/images/favicon.png");
+		ava1 = new ImageIcon("././resources/avatar/"+id_ava_host+".png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
 		JPanel panel1 = plr1.setPayer1(ava1, displayname);
 		panel1.setLayout(null);
@@ -296,8 +296,10 @@ public class User_Spectator implements Runnable{
 				else if (s.equals(Requests.SendInfos)) {
 					String hostDisplayName = disToHost.readUTF();
 					String Player2DisplayName = disToHost.readUTF();
-					setPlayer1Info(hostDisplayName);
-					setPlayer2Info(Player2DisplayName);
+					int id_ava_p2 = Integer.parseInt(disToHost.readUTF());
+					int id_ava_host = Integer.parseInt(disToHost.readUTF());
+					setPlayer1Info(hostDisplayName, id_ava_host);
+					setPlayer2Info(Player2DisplayName, id_ava_p2);
 					boardReset();
 					dosToHost.writeUTF(Requests.GetBoard);
 				}
@@ -311,7 +313,7 @@ public class User_Spectator implements Runnable{
 					String player2DisplayName = disToHost.readUTF();
 					PopUpMessage.infoBox("Người chơi "+player2DisplayName+" đã đóng kết nối", "Thông báo");
 					boardReset();
-					setPlayer2Info("");
+					setPlayer2Info("",0);
 				}
 			}
 		}
