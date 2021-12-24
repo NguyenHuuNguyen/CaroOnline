@@ -18,6 +18,7 @@ public class MainServer {
 
 	static Vector<Room> vtRoom = new Vector<>();
 	static int idroom = 1;
+	static int ava_number = 5;
 	//public static Vector<CaroClient> clients = new Vector<>();
 	MainServer(){
 		try {
@@ -115,6 +116,12 @@ class CaroClient extends Thread{
 				else if(s.equals(Requests.CreateNewUser)) {
 					createNewUser();
 				}
+				else if(s.equals(Requests.GetAvaNumber)) {
+					getAvaNumber();
+				}
+				else if(s.equals(Requests.ChangeAvatar)) {
+					changeAvatar();
+				}
 				else dos.writeUTF(Responses.BadRequest);
 			}
 		}
@@ -131,11 +138,21 @@ class CaroClient extends Thread{
 			catch (Exception e1){}
 		}
 	}
+	private void changeAvatar() throws Exception{
+		// TODO Auto-generated method stub
+		String username = dis.readUTF();
+		int id_ava = dis.read();
+		BLL.Instance().changeAvatar(id_ava, username);
+	}
+	private void getAvaNumber() throws Exception {
+		dos.write(MainServer.ava_number);
+	}
 	private void createNewUser() throws Exception{
 		String username = dis.readUTF();
 		String displayname = dis.readUTF();
 		String password = dis.readUTF();
-		String tb = BLL.Instance().createNewUser(username, displayname, password);
+		int id_ava = dis.read();
+		String tb = BLL.Instance().createNewUser(username, displayname, password, id_ava);
 		if (tb.equals("ok")) {
 			dos.writeUTF(Responses.UserCreate_Success);
 		}
@@ -203,6 +220,7 @@ class CaroClient extends Thread{
 		dos.writeUTF(a.getPassword());
 		dos.write(a.getBattleLost());
 		dos.write(a.getBattleWon());
+		dos.write(a.getId_ava());
 	}
 	private void loginRequest() throws Exception
 	{

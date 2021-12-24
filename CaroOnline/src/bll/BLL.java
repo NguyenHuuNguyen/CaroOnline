@@ -147,13 +147,17 @@ public class BLL {
 	public void changeDisplayNameUser(String displayname, int id_user) {
 		DAL.Instance().changeDisplayNameUser(displayname, id_user);
 	}
-	public String createNewUser(String username, String displayname, String password) {
-		return DAL.Instance().createNewUser(username, displayname, password);
+	public String createNewUser(String username, String displayname, String password, int id_ava) {
+		return DAL.Instance().createNewUser(username, displayname, password, id_ava);
 		
 	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
+	}
+	public void changeAvatar(int id_ava, String username) {
+		DAL.Instance().changeAvatar(id_ava, username);
+		
 	}
 
 
