@@ -11,9 +11,10 @@ public class Account {
 	String DisplayName;
 	int BattleWon;
 	int BattleLost;
+	int id_ava;
 	
 	public Account(int id_user, String username, String password, boolean status, String displayName, int battleWon,
-			int battleLost) {
+			int battleLost, int _id_ava) {
 		super();
 		this.id_user = id_user;
 		Username = username;
@@ -22,6 +23,15 @@ public class Account {
 		DisplayName = displayName;
 		BattleWon = battleWon;
 		BattleLost = battleLost;
+		id_ava = _id_ava;
+	}
+
+	public int getId_ava() {
+		return id_ava;
+	}
+
+	public void setId_ava(int id_ava) {
+		this.id_ava = id_ava;
 	}
 
 	public String getPassword() {

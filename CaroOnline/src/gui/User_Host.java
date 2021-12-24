@@ -60,6 +60,7 @@ public class User_Host implements Runnable{
 	static boolean isTurn = true;
 	static int[][] boardXY = new int[n][n];
 	static String player2DispayName = "";
+	static int id_ava_p2;
 	static Account userAccount;
 	public static Vector<Client> clients = new Vector<>();
 	static Room currentRoom = null;
@@ -135,7 +136,7 @@ public class User_Host implements Runnable{
 		setEventbff(bff);
 		window.add(bff);
 		//player1(tam)
-		ava1 = new ImageIcon("././resources/images/favicon.png");
+		ava1 = new ImageIcon("././resources/avatar/"+userAccount.getId_ava()+".png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
 		JPanel panel1 = plr1.setPayer1(ava1, userAccount.getDisplayName());
 		panel1.setLayout(null);
@@ -172,9 +173,9 @@ public class User_Host implements Runnable{
 	{
 		this.background=img;
 	}
-	public static void setPlayer2Info(String displayname) {
+	public static void setPlayer2Info(String displayname, int id_ava) {
 		window.remove(panel2);
-		ava2 = new ImageIcon("././resources/images/favicon.png");
+		ava2 = new ImageIcon("././resources/avatar/"+id_ava+".png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
 		panel2 = plr2.setPayer2(ava2, displayname);
 		panel2.setLayout(null);
@@ -423,8 +424,7 @@ class Client extends Thread{
 				else if (s.equals(Requests.ChatMessage)) {
 					s = dis.readUTF();
 					User_Host.ta.append(s);
-					User_Host.ta.append("\n");
-					
+					User_Host.ta.append("\n");		
 					User_Host.sendStringToAllClients(Requests.ChatMessage);
 					User_Host.sendStringToAllClients(s);
 				}
@@ -434,12 +434,16 @@ class Client extends Thread{
 					User_Host.isTurn = true;
 					User_Host.boardReset();
 					String player2DisplayName = dis.readUTF();
-					User_Host.setPlayer2Info(player2DisplayName);
+					User_Host.id_ava_p2 = dis.read();
+					User_Host.setPlayer2Info(player2DisplayName, User_Host.id_ava_p2);
 					User_Host.player2DispayName = player2DisplayName;
 					dos.writeUTF(User_Host.userAccount.getDisplayName());
+					dos.write(User_Host.userAccount.getId_ava());
 					User_Host.sendStringToAllClients(Requests.SendInfos);
 					User_Host.sendStringToAllClients(User_Host.userAccount.getDisplayName());
 					User_Host.sendStringToAllClients(User_Host.player2DispayName);
+					User_Host.sendStringToAllClients(User_Host.id_ava_p2+"");
+					User_Host.sendStringToAllClients(User_Host.userAccount.getId_ava()+"");
 					System.out.println(User_Host.userAccount.getDisplayName());
 				}
 				else if (s.equals(Requests.DrawProposalRefused)) {
@@ -487,12 +491,14 @@ class Client extends Thread{
 					dos.writeUTF(Requests.SendInfos);
 					dos.writeUTF(User_Host.userAccount.getDisplayName());
 					dos.writeUTF(User_Host.player2DispayName);
+					dos.writeUTF(User_Host.id_ava_p2+"");
+					dos.writeUTF(User_Host.userAccount.getId_ava()+"");
 				}
 				else if (s.equals(Requests.Player2Disconnected)) {
 					User_Host.boardReset();
 					User_Host.isPlayer2Joined = false;
 					connectable = false;
-					User_Host.setPlayer2Info("");
+					User_Host.setPlayer2Info("", 0);
 					User_Host.sendStringToAllClients(Requests.Player2Disconnected);
 					User_Host.sendStringToAllClients(User_Host.player2DispayName);
 					User_Host.dosToMainServer.writeUTF(Requests.Player2Disconnected);

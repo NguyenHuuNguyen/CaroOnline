@@ -66,6 +66,7 @@ public class User_Player implements Runnable{
 	
 	public User_Player(Socket sk, JFrame jf, Room _room, Account _account){
 		String hostDisplayName = "";
+		int hostid_ava = 0;
 		menu = jf;
 		if (sk != null)
 			try {
@@ -77,7 +78,9 @@ public class User_Player implements Runnable{
 				dosToHost = new DataOutputStream(skToHost.getOutputStream());
 				dosToHost.writeUTF(Requests.Player2Joined);
 				dosToHost.writeUTF(userAccount.getDisplayName());
+				dosToHost.write(userAccount.getId_ava());
 				hostDisplayName = disToHost.readUTF();
+				hostid_ava = disToHost.read();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -139,7 +142,7 @@ public class User_Player implements Runnable{
 		setEventbff(bff);
 		window.add(bff);
 		//player1(tam)
-		ava1 = new ImageIcon("././resources/images/favicon.png");
+		ava1 = new ImageIcon("././resources/avatar/"+hostid_ava+".png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
 		panel1 = plr1.setPayer1(ava1, hostDisplayName);
 		panel1.setLayout(null);
@@ -147,7 +150,7 @@ public class User_Player implements Runnable{
 		window.add(panel1);
 		
 		//player2(tam)
-		ava2 = new ImageIcon("././resources/images/favicon.png");
+		ava2 = new ImageIcon("././resources/avatar/"+userAccount.getId_ava()+".png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
 		JPanel panel2 = plr2.setPayer2(ava2, userAccount.getDisplayName());
 		panel2.setLayout(null);
