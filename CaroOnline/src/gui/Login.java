@@ -31,6 +31,7 @@ public class Login{
 	public void createConnection() {
 		try {
 			// sửa host để chạy qua lan
+			//sk = new Socket("192.168.1.100", 14972);
 			sk = new Socket("localhost", 14972);
 			dis = new DataInputStream(sk.getInputStream());
 			dos = new DataOutputStream(sk.getOutputStream());
@@ -136,14 +137,14 @@ public class Login{
 	public void setEventbmisspass(JButton bmisspass) {
 		bmisspass.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bmisspass đã được nhấn!!!");
+				new Signin(sk);
 			}		
 		});
 	}
 	public void setEventbsignup(JButton bsignup) {
 		bsignup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bsignup đã được nhấn!!!");
+				new Signin(sk);
 			}
 		});
 	}

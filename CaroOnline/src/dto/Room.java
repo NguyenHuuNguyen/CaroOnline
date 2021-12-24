@@ -15,15 +15,16 @@ public class Room {
 	String JoinButton;
 	
 	public Room(int _roomID, String _RoomName, String _Password, String _hostDisplayName, String _hostIPAddress, 
-			String _mode, String _AlowSpectator) {
+			int _hostport,String _mode, String _AlowSpectator) {
 		super();
 		RoomID = _roomID;
 		RoomName = _RoomName;
 		Password = _Password;
 		HostDisplayName = _hostDisplayName;
 		HostIPAddress = _hostIPAddress;
-		CurrentPlayers = 1;
+		CurrentPlayers = CurrentPlayers + 1;
 		CurrentSpectators = 0;
+		HostPort = 16969;
 		Mode = _mode;
 		AlowSpectator_String = _AlowSpectator;
 		JoinButton = "THAM GIA "+ _roomID;

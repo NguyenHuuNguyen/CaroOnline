@@ -1,6 +1,12 @@
 package dto;
 
 public class Requests {
+	public static String CreateNewUser = "#rq90";
+	public static String ChangePass = "#rq91";
+	public static String AddCurrentSpectator = "#rq92";
+	public static String AddCurrentPlayer = "#rq93";
+	public static String ChangeDisplayName = "#rq94";
+	public static String GetAccountbyUsername = "#rq95";
 	public static String Login = "#rq01";
 	public static String Logout = "#rq02";
 	public static String GetRooms = "#rq03";
@@ -20,6 +26,9 @@ public class Requests {
 	public static String GetBoard = "#rq17";
 	public static String GetDisplayInfos = "#rq18";
 	public static String SendInfos = "#rq19";
+	public static String HostDisconnected = "#rq20";
+	public static String Player2Disconnected = "#rq21";
+	public static String RoomDoNotExist = "#rq22";
 	public static String CreateRoom = "#rq99";
 	public static String GetAllRoom = "#rp98";
 	public static String GetRoomByName = "#rp97";

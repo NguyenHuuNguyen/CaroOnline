@@ -20,6 +20,7 @@ import java.util.Vector;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import dto.Account;
 import dto.Requests;
 import dto.Responses;
 import dto.Room;
@@ -54,8 +55,13 @@ public class Menu {
 	Vector vtData = new Vector();
 	Vector vtHeader = new Vector();
 	Menu m;
-	JTable tb_room;
-	Room room;
+	JPanel add_tb = new JPanel();
+	JTable tb_room = new JTable();
+	Room room = new Room(0, "", "", "", "",0,"","");
+	Account account = new Account(0,"","",false,"",0,0);
+	JLabel lbmn_if1 = new JLabel();
+	JLabel lbmn_if2 = new JLabel();
+	JLabel lbmn_if3 = new JLabel();
 	public Menu(Socket sk, JFrame _jf, String _username) {
 		if (sk != null)
 			try {
@@ -112,38 +118,38 @@ public class Menu {
 		setEventbcreate_room(bcreate_room);
 		window.add(bcreate_room);
 		//checkbox...
-		JCheckBox chb1 = new JCheckBox("Caro 5");
-		chb1.setBounds(300, 128, 150, 50);
-		chb1.setBackground(new Color(217, 246, 252));
-		chb1.setFont(new Font("Arial", Font.PLAIN, 20));
-		window.add(chb1);
+//		JCheckBox chb1 = new JCheckBox("Caro 5");
+//		chb1.setBounds(300, 128, 150, 50);
+//		chb1.setBackground(new Color(217, 246, 252));
+//		chb1.setFont(new Font("Arial", Font.PLAIN, 20));
+//		window.add(chb1);
 		//
-		JCheckBox chb2 = new JCheckBox("Caro 3");
-		chb2.setBounds(300, 168, 150, 50);
-		chb2.setBackground(new Color(217, 246, 252));
-		chb2.setFont(new Font("Arial", Font.PLAIN, 20));
-		window.add(chb2);
+//		JCheckBox chb2 = new JCheckBox("Caro 3");
+//		chb2.setBounds(300, 168, 150, 50);
+//		chb2.setBackground(new Color(217, 246, 252));
+//		chb2.setFont(new Font("Arial", Font.PLAIN, 20));
+//		window.add(chb2);
 		//
 		JCheckBox chb3 = new JCheckBox("Phòng trống");
-		chb3.setBounds(500, 128, 150, 50);
+		chb3.setBounds(300, 128, 150, 50);
 		chb3.setBackground(new Color(217, 246, 252));
 		chb3.setFont(new Font("Arial", Font.PLAIN, 20));
 		window.add(chb3);
 		//
 		JCheckBox chb4 = new JCheckBox("Phòng đầy");
-		chb4.setBounds(500, 168, 150, 50);
+		chb4.setBounds(300, 168, 150, 50);
 		chb4.setBackground(new Color(217, 246, 252));
 		chb4.setFont(new Font("Arial", Font.PLAIN, 20));
 		window.add(chb4);
 		//
 		JCheckBox chb5 = new JCheckBox("Có mật khẩu");
-		chb5.setBounds(700, 128, 150, 50);
+		chb5.setBounds(500, 128, 150, 50);
 		chb5.setBackground(new Color(217, 246, 252));
 		chb5.setFont(new Font("Arial", Font.PLAIN, 20));
 		window.add(chb5);
 		//
 		JCheckBox chb6 = new JCheckBox("Không mật khẩu");
-		chb6.setBounds(700, 168, 200, 50);
+		chb6.setBounds(500, 168, 200, 50);
 		chb6.setBackground(new Color(217, 246, 252));
 		chb6.setFont(new Font("Arial", Font.PLAIN, 20));
 		window.add(chb6);
@@ -156,12 +162,24 @@ public class Menu {
 		setEventbsearch(bsearch);
 		window.add(bsearch);
 		//table
+		vtHeader.add("ID");
+		vtHeader.add("TÊN PHÒNG");
+		vtHeader.add("MẬT KHẨU");
+		//vtHeader.add("CHẾ ĐỘ");
+		vtHeader.add("KHÁN GIẢ");
+		vtHeader.add("THAM GIA");
+		window.add(add_tb);
 		setTableData();
+		window.add(lbmn_if1);
+		window.add(lbmn_if2);
+		window.add(lbmn_if3);
+		account = menuGetAccount(username);
+		setMenuInfoUser(account);
 		//System.out.println("Server is started");
 		// khong cho chinh kich thuoc(ko thanh cong)
 		
 		//
-		window.setTitle("Cờ Caro"+username);
+		window.setTitle("Cờ Caro - "+username);
 		window.setVisible(true);
 	}
 	public void setBackground(ImageIcon img)
@@ -185,7 +203,7 @@ public class Menu {
 	public void setEventbsearch(JButton bsearch) {
 		bsearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("bsearch đã được nhấn!!!");
+				setTableData();
 			}		
 		});
 	}
@@ -200,22 +218,38 @@ public class Menu {
 	public void setEventbeditinfo(JButton beditinfo) {
 		beditinfo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("beditinfo đã được nhấn!!!");
+				//System.out.println("beditinfo đã được nhấn!!!");
+				account = menuGetAccount(username);
+				new Info(skToMainServer,window, m, account);
 			}		
 		});
 	}
-	public void setTableData() {
-		tb_room = new JTable();
-		JPanel add_tb = new JPanel();
-		add_tb.setLayout(null);
-		//test_tb.setSize(500,500);
-		vtHeader.add("ID");
-		vtHeader.add("TÊN PHÒNG");
-		vtHeader.add("MẬT KHẨU");
-		vtHeader.add("CHẾ ĐỘ");
-		vtHeader.add("KHÁN GIẢ");
-		vtHeader.add("THAM GIA");
+	public void setMenuInfoUser(Account account) {
+		window.remove(lbmn_if1);
+		window.remove(lbmn_if2);
+		window.remove(lbmn_if3);
+		
+		lbmn_if1 = new JLabel(account.getDisplayName());
+		lbmn_if1.setFont(new Font("Arial", Font.PLAIN, 20));
+		lbmn_if1.setBounds(50,210, 150, 30);
+		window.add(lbmn_if1);
 		//
+		lbmn_if2 = new JLabel("Trận thắng: "+ account.getBattleWon());
+		lbmn_if2.setFont(new Font("Arial", Font.PLAIN, 20));
+		lbmn_if2.setBounds(50,250, 150, 30);
+		window.add(lbmn_if2);
+		//
+		lbmn_if3 = new JLabel("Trận thua:    "+ account.getBattleLost());
+		lbmn_if3.setFont(new Font("Arial", Font.PLAIN, 20));
+		lbmn_if3.setBounds(50,290, 150, 30);
+		window.add(lbmn_if3);
+	}
+	public void setTableData() {
+		window.remove(add_tb);
+		add_tb = new JPanel();
+		tb_room = new JTable();
+		vtData = new Vector();
+		add_tb.setLayout(null);
 		Vector element;
 		try {
 			dos.writeUTF(Requests.GetAllRoom);
@@ -230,7 +264,7 @@ public class Menu {
 				element.add(dis.readUTF());
 				element.add(dis.readUTF());
 				element.add(dis.readUTF());
-				element.add(dis.readUTF());
+				//element.add(dis.readUTF());
 				vtData.add(element);
 			}
 		}
@@ -241,7 +275,7 @@ public class Menu {
 		    @Override
 		    public boolean isCellEditable(int row, int column ) {
 		       //all cells false
-		    	if (column == 5) {return true;}
+		    	if (column == 4) {return true;}
 		    	else return false;
 		    }
 		};
@@ -250,14 +284,14 @@ public class Menu {
 		tb_room.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		//
 		tb_room.getColumnModel().getColumn(0).setPreferredWidth(117);
-		tb_room.getColumnModel().getColumn(1).setPreferredWidth(140);
-		tb_room.getColumnModel().getColumn(2).setPreferredWidth(140);
-		tb_room.getColumnModel().getColumn(3).setPreferredWidth(140);
-		tb_room.getColumnModel().getColumn(4).setPreferredWidth(100);
-		tb_room.getColumnModel().getColumn(5).setPreferredWidth(140);
+		tb_room.getColumnModel().getColumn(1).setPreferredWidth(160);
+		tb_room.getColumnModel().getColumn(2).setPreferredWidth(160);
+		tb_room.getColumnModel().getColumn(3).setPreferredWidth(160);
+		tb_room.getColumnModel().getColumn(4).setPreferredWidth(160);
+		//tb_room.getColumnModel().getColumn(5).setPreferredWidth(140);
 		//
 		tb_room.getColumn("THAM GIA").setCellRenderer(new ButtonRenderer());
-		tb_room.getColumn("THAM GIA").setCellEditor(new ButtonEditor(new JCheckBox()));
+		tb_room.getColumn("THAM GIA").setCellEditor(new ButtonEditor(new JCheckBox(),m));
 		
 		JScrollPane sp = new JScrollPane(tb_room);  
 		sp.setSize(820,382);
@@ -267,24 +301,93 @@ public class Menu {
 		window.add(add_tb);
 	}
 	// thêm hàm tạo phòng, vd: void createRoom(id room) { new ....}
-	public void goToRoom_Host(int iD) {
-		room.setRoomID(iD);
+	public void goToRoom_Host(int iD) {	
+		//System.out.println(iD);
+		room = menuGetRoom(iD);
+		account = menuGetAccount(username);
+		User_Host a = new User_Host(skToMainServer, window, room, account);
+		Thread t = new Thread(a);
+		t.start();
+		window.setVisible(false);
+	}
+	public void goToRoom_Player(int ID) {
+		System.out.println(ID);
+		room = menuGetRoom(ID);
+		if (room == null) {
+			PopUpMessage.infoBox("Phòng không còn tồn tại", "Thông báo");
+			setTableData();
+			return;
+		}
+		System.out.println(room.getCurrentPlayers());
+		if (room.getCurrentPlayers() < 2) {
+			account = menuGetAccount(username);
+			try {
+				dos.writeUTF(Requests.AddCurrentPlayer);
+				dos.write(room.getRoomID());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			User_Player a = new User_Player(skToMainServer, window, room, account);
+			Thread t = new Thread(a);
+			t.start();
+			window.setVisible(false);
+		}
+		else if (room.getCurrentPlayers() >= 2) {
+			int input = JOptionPane.showConfirmDialog(null, "Xác nhận tham gia với tư cách khán giả?");
+			if (input == 0) {
+				try {
+					dos.writeUTF(Requests.AddCurrentSpectator);
+					dos.write(room.getRoomID());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				User_Spectator a = new User_Spectator(skToMainServer, window, room, account);
+				Thread t = new Thread(a);
+				t.start();
+				window.setVisible(false);
+			}
+		}
+	}
+	public Room menuGetRoom(int id) {
+		room = new Room(0, "", "", "", "",0,"","");
+		room.setRoomID(id);
 		try {
+			dos.writeUTF(Requests.GetRoomByID);
+			dos.write(id);
+			String ans = dis.readUTF();
+			if (ans.equals(Requests.RoomDoNotExist)) return null;
 			room.setRoomName(dis.readUTF());
 			room.setPassword(dis.readUTF());
 			room.setHostDisplayName(dis.readUTF());
 			room.setHostIPAddress(dis.readUTF());
 			room.setCurrentPlayers(dis.read());
-			//room.set
+			room.setCurrentSpectators(dis.read());
+			room.setMode(dis.readUTF());
+			room.setAlowSpectator_String(dis.readUTF());
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		new User_Host(skToMainServer, window, iD, username);
-		window.setVisible(false);
+		return room;
 	}
-	public void goToRoom_Player(int ID) {
-		//new User_Player(skToMainServer, window, ID, username);
-		window.setVisible(false);
+	public Account menuGetAccount(String _username) {
+		account.setUsername(_username);
+		try {
+			dos.writeUTF(Requests.GetAccountbyUsername);
+			dos.writeUTF(_username);
+			account.setId_user(dis.read());
+			account.setDisplayName(dis.readUTF());
+			account.setPassword(dis.readUTF());
+			account.setBattleLost(dis.read());
+			account.setBattleWon(dis.read());
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return account;
 	}
 }

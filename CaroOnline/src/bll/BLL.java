@@ -35,7 +35,10 @@ public class BLL {
 	{
 		return DAL.Instance().getAccountByUsername(username);
 	}
-	
+	public void changePassUser(String passnew, int id) {
+		// TODO Auto-generated method stub
+		DAL.Instance().changePassUser(passnew, id);
+	}
 	public void setAccountStatus(int id, boolean status)
 	{
 		DAL.Instance().setAccountStatus(id, status);
@@ -140,10 +143,18 @@ public class BLL {
 		if (k == 5 && p < 2) return true;
 		return false;
 	}
-	
+	//
+	public void changeDisplayNameUser(String displayname, int id_user) {
+		DAL.Instance().changeDisplayNameUser(displayname, id_user);
+	}
+	public String createNewUser(String username, String displayname, String password) {
+		return DAL.Instance().createNewUser(username, displayname, password);
+		
+	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
 	}
+
 
 }

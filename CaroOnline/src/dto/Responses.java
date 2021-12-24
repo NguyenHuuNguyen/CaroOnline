@@ -1,6 +1,11 @@
 package dto;
 
 public class Responses {
+	public static String UserCreate_Success = "#rp91";
+	public static String UserCreate_Fail = "#rp90";
+	public static String ChangePassFail = "#rp92";
+	public static String ChangePassSuccess = "#rp93";
+	public static String RoomName_Have = "#rp94";
 	public static String Theend = "#rp95";
 	public static String LoginFail = "#rp01";
 	public static String LoginSuccess = "#rp02";

@@ -2,6 +2,7 @@ package exec;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
@@ -37,7 +38,7 @@ public class MainServer {
 	}
 	
 	public static void main(String[] args) {
-		Room a = new Room(0, "", "", "", "","","");
+		Room a = new Room(0, "", "", "", "",0,"","");
 		vtRoom.add(a);
 		new MainServer();
 	}
@@ -48,14 +49,17 @@ class CaroClient extends Thread{
 	DataInputStream dis;
 	DataOutputStream dos;
 	boolean connectable = true;
-	String c;
+	String ip_address;
 	public CaroClient(Socket SK) {
 		try {  
 			sk = SK;
 			dis = new DataInputStream(sk.getInputStream());
 			dos = new DataOutputStream(sk.getOutputStream());
-			c = sk.getRemoteSocketAddress().toString();
-			System.out.println(c + " connected");
+			//c = sk.getRemoteSocketAddress().toString();
+			//ip_address = sk.getInetAddress().getLocalHost().getHostAddress();
+			InetSocketAddress socketAddress = (InetSocketAddress) sk.getRemoteSocketAddress();
+			ip_address = socketAddress.getAddress().getHostAddress();
+			System.out.println(ip_address + " connected");
 		}
 		catch(Exception e) {
 			System.out.println(e.toString());
@@ -87,6 +91,30 @@ class CaroClient extends Thread{
 				else if(s.equals(Requests.GetRoomByID)) {
 					getRoomByID();
 				}
+				else if(s.equals(Requests.GetAccountbyUsername)) {
+					getAccountbyUsername();
+				}
+				else if(s.equals(Requests.ChangeDisplayName)) {
+					changeDisplayNameUser();
+				}
+				else if(s.equals(Requests.AddCurrentPlayer)) {
+					addCurrentPlayer();
+				}
+				else if(s.equals(Requests.AddCurrentSpectator)) {
+					addCurrentSpectaror();
+				}
+				else if(s.equals(Requests.ChangePass)) {
+					changePassUser();
+				}
+				else if(s.equals(Requests.Player2Disconnected)) {
+					Player2Disconnected();
+				}
+				else if(s.equals(Requests.HostDisconnected)) {
+					HostDisconnected();
+				}
+				else if(s.equals(Requests.CreateNewUser)) {
+					createNewUser();
+				}
 				else dos.writeUTF(Responses.BadRequest);
 			}
 		}
@@ -96,12 +124,85 @@ class CaroClient extends Thread{
 			if (user != null)
 				DAL.Instance().setAccountStatus(user.getId_user(), false);
 			connectable = false;
-			System.out.println(c + " disconnected");
+			System.out.println(ip_address + " disconnected");
 			try {
 				sk.close();
 			}
 			catch (Exception e1){}
 		}
+	}
+	private void createNewUser() throws Exception{
+		String username = dis.readUTF();
+		String displayname = dis.readUTF();
+		String password = dis.readUTF();
+		String tb = BLL.Instance().createNewUser(username, displayname, password);
+		if (tb.equals("ok")) {
+			dos.writeUTF(Responses.UserCreate_Success);
+		}
+		else if (tb.equals("no")) {
+			dos.writeUTF(Responses.UserCreate_Fail);
+		}
+	}
+	private void HostDisconnected() throws Exception {
+		int idroom = dis.read();
+		for (Room r : MainServer.vtRoom) {
+			if (r.getRoomID() == idroom) {
+				MainServer.vtRoom.remove(r);
+				break;
+			}
+				
+		}
+	}
+	private void Player2Disconnected() throws Exception {
+		int idroom = dis.read();
+		for (Room r : MainServer.vtRoom) {
+			if (r.getRoomID() == idroom)
+				r.setCurrentPlayers(r.getCurrentPlayers() - 1);
+		}
+	}
+	private void changePassUser() throws Exception{
+		String username = dis.readUTF();
+		String passold = dis.readUTF();
+		String passnew = dis.readUTF();
+		Account a = BLL.Instance().getAccountByUsername(username);
+		if (a.getPassword().equals(passold)) {
+			BLL.Instance().changePassUser(passnew, a.getId_user());
+			dos.writeUTF(Responses.ChangePassSuccess);
+		}
+		else dos.writeUTF(Responses.ChangePassFail);
+		
+	}
+	private void addCurrentSpectaror() throws Exception{
+		int id = dis.read();
+		for (Room i : MainServer.vtRoom) {
+			if (i.getRoomID() == id) {
+				i.setCurrentSpectators(i.getCurrentSpectators() + 1);
+				System.out.println(i.getCurrentSpectators());
+			}
+		}
+	}
+	private void addCurrentPlayer() throws Exception{
+		int id = dis.read();
+		for (Room i : MainServer.vtRoom) {
+			if (i.getRoomID() == id) {
+				i.setCurrentPlayers(i.getCurrentPlayers() + 1);
+				//System.out.println(i.getCurrentPlayers());
+			}
+		}
+	}
+	private void changeDisplayNameUser() throws Exception{
+		String displayname = dis.readUTF();
+		int id_user = dis.read();
+		BLL.Instance().changeDisplayNameUser(displayname, id_user);
+	}
+	private void getAccountbyUsername() throws Exception{
+		String username = dis.readUTF();
+		Account a = BLL.Instance().getAccountByUsername(username);
+		dos.write(a.getId_user());
+		dos.writeUTF(a.getDisplayName());
+		dos.writeUTF(a.getPassword());
+		dos.write(a.getBattleLost());
+		dos.write(a.getBattleWon());
 	}
 	private void loginRequest() throws Exception
 	{
@@ -132,15 +233,21 @@ class CaroClient extends Thread{
 		String roompass = dis.readUTF();
 		String mode = dis.readUTF();
 		String alowspectator = dis.readUTF();
-		
+		int check = 1;
+		for (Room i : MainServer.vtRoom) {
+			if (i.getRoomName().equals(roomname)) {
+				check = check +1;
+			}
+		}
 		if (roomname.equals("")) dos.writeUTF(Responses.RoomCreate_Fail);
-		else {
+		else if (check == 1){
 			String displayName = BLL.Instance().getDisplayName(userName);
-			Room a = new Room(MainServer.idroom, roomname, roompass, displayName,"localhost", mode, alowspectator);
+			Room a = new Room(MainServer.idroom, roomname, roompass, displayName, ip_address, 16969,mode, alowspectator);
 			MainServer.vtRoom.add(a);
 			MainServer.idroom++;
 			dos.writeUTF(Responses.RoomCreate_Success);
 		}
+		else dos.writeUTF(Responses.RoomName_Have);
 	}
 	private void getAllRoom() throws Exception{
 		for (Room i : MainServer.vtRoom) {
@@ -149,7 +256,7 @@ class CaroClient extends Thread{
 			dos.writeUTF(i.getRoomName());
 			if (i.getPassword().equals("")) dos.writeUTF("Không");
 			else dos.writeUTF("Có");
-			dos.writeUTF(i.getMode());
+			//dos.writeUTF(i.getMode());
 			dos.writeUTF(i.getAlowSpectator_String());
 			dos.writeUTF(i.getJoinButton());
 		}
@@ -169,7 +276,7 @@ class CaroClient extends Thread{
 		int roomid = dis.read();
 		for (Room i : MainServer.vtRoom) {
 			if (i.getRoomID() == roomid) {
-				dos.write(i.getRoomID());
+				dos.writeUTF("ok");
 				dos.writeUTF(i.getRoomName());
 				dos.writeUTF(i.getPassword());
 				dos.writeUTF(i.getHostDisplayName());
@@ -178,8 +285,10 @@ class CaroClient extends Thread{
 				dos.write(i.getCurrentSpectators());
 				dos.writeUTF(i.getMode());
 				dos.writeUTF(i.getAlowSpectator_String());
-				dos.writeUTF(i.getJoinButton());
+				//dos.writeUTF(i.getJoinButton());
+				return;
 			}
 		}
+		dos.writeUTF(Requests.RoomDoNotExist);
 	}
 }
