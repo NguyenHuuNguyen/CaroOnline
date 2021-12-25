@@ -31,8 +31,8 @@ public class Login{
 	public void createConnection() {
 		try {
 			// sửa host để chạy qua lan
-			//sk = new Socket("192.168.1.100", 14972);
-			sk = new Socket("localhost", 14972);
+			sk = new Socket("192.168.1.100", 14972);
+			//sk = new Socket("localhost", 14972);
 			dis = new DataInputStream(sk.getInputStream());
 			dos = new DataOutputStream(sk.getOutputStream());
 		} catch (Exception e) {

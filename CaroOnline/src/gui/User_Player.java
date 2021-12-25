@@ -35,6 +35,8 @@ public class User_Player implements Runnable{
 	JPanel board = null;
 	
 	int XYtype = 2;
+	String hostDisplayName;
+	int host_id_ava;
 	boolean isTurn = false;
 	boolean isrun = true;
 	static int n = 15;
@@ -42,6 +44,7 @@ public class User_Player implements Runnable{
 	ImageIcon background;
 	JPanel p ;
 	JPanel panel1;
+	JPanel panel2;
 	JTextField tf = new JTextField();
 	JTextArea ta = new JTextArea();
 	ImageIcon ava1;
@@ -65,8 +68,6 @@ public class User_Player implements Runnable{
 	int[][] boardXY = new int[n][n];
 	
 	public User_Player(Socket sk, JFrame jf, Room _room, Account _account){
-		String hostDisplayName = "";
-		int hostid_ava = 0;
 		menu = jf;
 		if (sk != null)
 			try {
@@ -79,8 +80,9 @@ public class User_Player implements Runnable{
 				dosToHost.writeUTF(Requests.Player2Joined);
 				dosToHost.writeUTF(userAccount.getDisplayName());
 				dosToHost.write(userAccount.getId_ava());
+				dosToHost.write(userAccount.getId_user());
 				hostDisplayName = disToHost.readUTF();
-				hostid_ava = disToHost.read();
+				host_id_ava = disToHost.read();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -142,9 +144,9 @@ public class User_Player implements Runnable{
 		setEventbff(bff);
 		window.add(bff);
 		//player1(tam)
-		ava1 = new ImageIcon("././resources/avatar/"+hostid_ava+".png");
+		ava1 = new ImageIcon("././resources/avatar/"+host_id_ava+".png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		panel1 = plr1.setPayer1(ava1, hostDisplayName);
+		panel1 = plr1.setPayer1(ava1, hostDisplayName, true);
 		panel1.setLayout(null);
 		panel1.setBounds(20,595, 250, 100);
 		window.add(panel1);
@@ -152,7 +154,7 @@ public class User_Player implements Runnable{
 		//player2(tam)
 		ava2 = new ImageIcon("././resources/avatar/"+userAccount.getId_ava()+".png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		JPanel panel2 = plr2.setPayer2(ava2, userAccount.getDisplayName());
+		panel2 = plr2.setPayer2(ava2, userAccount.getDisplayName(), false);
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);
@@ -182,6 +184,26 @@ public class User_Player implements Runnable{
 	{
 		this.background=img;
 	}
+	void setPlayer2Turn(boolean isTurn) {
+		window.remove(panel2);
+		ava2 = new ImageIcon("././resources/avatar/"+userAccount.getId_ava()+".png");
+		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
+		panel2 = plr2.setPayer2(ava2, userAccount.getDisplayName(), isTurn);
+		panel2.setLayout(null);
+		panel2.setBounds(560,10, 250, 100);
+		window.add(panel2);
+		window.repaint();
+	}
+	void setPlayer1Turn(boolean isTurn) {
+		window.remove(panel1);
+		ava1 = new ImageIcon("././resources/avatar/"+host_id_ava+".png");
+		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
+		panel1 = plr1.setPayer1(ava1, hostDisplayName, isTurn);
+		panel1.setLayout(null);
+		panel1.setBounds(20,595, 250, 100);
+		window.add(panel1);
+		window.repaint();
+	}
 	private void mousePressedOnBoard(int i, int j) {
 		//
 		// xu ly danh quan co o day
@@ -189,6 +211,8 @@ public class User_Player implements Runnable{
 		if (isTurn == false) return;
 		if (boardXY[i][j] != 0) return;
 		isTurn = false;
+		setPlayer1Turn(true);
+		setPlayer2Turn(false);
 		try {
 			dosToHost.writeUTF(Requests.XYCoordinate);
 			dosToHost.writeInt(i);
@@ -322,7 +346,11 @@ public class User_Player implements Runnable{
 					int j = disToHost.readInt();
 					int type = disToHost.readInt();
 					boardXY[i][j] = type;
-					if (type != XYtype) isTurn = true;
+					if (type != XYtype) {
+						isTurn = true;
+						setPlayer1Turn(false);
+						setPlayer2Turn(true);
+					}
 					draw();
 				}
 				else if (s.equals(Requests.ChatMessage)) {
@@ -364,7 +392,6 @@ public class User_Player implements Runnable{
 		}
 		catch(Exception e) {
 			System.out.println(e);
-			//xu ly loi, dang xuat
 		}
 	}
 }

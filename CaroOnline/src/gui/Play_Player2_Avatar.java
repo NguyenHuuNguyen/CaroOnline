@@ -7,7 +7,7 @@ import javax.swing.*;
 
 public class Play_Player2_Avatar extends JFrame {
 	ImageIcon pl2;
-	public JPanel setPayer2(ImageIcon ava2, String displayName) {
+	public JPanel setPayer2(ImageIcon ava2, String displayName, boolean isTurn) {
 		pl2 = new ImageIcon("././resources/images/player2.png");
 		JPanel p2 = new JPanel() {
 			@Override
@@ -19,6 +19,7 @@ public class Play_Player2_Avatar extends JFrame {
 				int l = displayName.length();
 				int x = (145 - 11*l)/2 + 3 + 1*l/3;
 				g1.drawString(displayName, x, 24);
+				if (isTurn) g1.drawString("X", 70, 56);
 			}
 		};
 		p2.setBackground(new Color(217, 246, 252));

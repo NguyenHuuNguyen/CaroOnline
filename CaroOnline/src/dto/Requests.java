@@ -31,6 +31,7 @@ public class Requests {
 	public static String HostDisconnected = "#rq20";
 	public static String Player2Disconnected = "#rq21";
 	public static String RoomDoNotExist = "#rq22";
+	public static String WinLoseUpdate = "#rq23";
 	public static String CreateRoom = "#rq99";
 	public static String GetAllRoom = "#rp98";
 	public static String GetRoomByName = "#rp97";
