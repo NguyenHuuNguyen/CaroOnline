@@ -42,9 +42,10 @@ public class User_Host implements Runnable{
 	JPanel p ;
 	JTextField tf = new JTextField();
 	static JTextArea ta = new JTextArea();
-	ImageIcon ava1;
+	static ImageIcon ava1;
 	static ImageIcon ava2;
 	static JPanel panel2;
+	static JPanel panel1;
 	static JButton bsend;
 	static JButton bop;
 	static JButton bexit;
@@ -61,6 +62,7 @@ public class User_Host implements Runnable{
 	static int[][] boardXY = new int[n][n];
 	static String player2DispayName = "";
 	static int id_ava_p2;
+	static int id_p2;
 	static Account userAccount;
 	public static Vector<Client> clients = new Vector<>();
 	static Room currentRoom = null;
@@ -138,14 +140,14 @@ public class User_Host implements Runnable{
 		//player1(tam)
 		ava1 = new ImageIcon("././resources/avatar/"+userAccount.getId_ava()+".png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		JPanel panel1 = plr1.setPayer1(ava1, userAccount.getDisplayName());
+		panel1 = plr1.setPayer1(ava1, userAccount.getDisplayName(), false);
 		panel1.setLayout(null);
 		panel1.setBounds(20,595, 250, 100);
 		window.add(panel1);
 		//player2(tam)
 		ava2 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		panel2 = plr2.setPayer2(ava2, "");
+		panel2 = plr2.setPayer2(ava2, "", false);
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);
@@ -177,13 +179,32 @@ public class User_Host implements Runnable{
 		window.remove(panel2);
 		ava2 = new ImageIcon("././resources/avatar/"+id_ava+".png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		panel2 = plr2.setPayer2(ava2, displayname);
+		panel2 = plr2.setPayer2(ava2, displayname, false);
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);
 		window.repaint();
 	}
-	
+	public static void setPlayer2Turn(boolean isTurn) {
+		window.remove(panel2);
+		ava2 = new ImageIcon("././resources/avatar/"+id_ava_p2+".png");
+		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
+		panel2 = plr2.setPayer2(ava2, player2DispayName, isTurn);
+		panel2.setLayout(null);
+		panel2.setBounds(560,10, 250, 100);
+		window.add(panel2);
+		window.repaint();
+	}
+	public static void setPlayer1Turn(boolean isTurn) {
+		window.remove(panel1);
+		ava1 = new ImageIcon("././resources/avatar/"+userAccount.getId_ava()+".png");
+		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
+		panel1 = plr1.setPayer1(ava1, userAccount.getDisplayName(), isTurn);
+		panel1.setLayout(null);
+		panel1.setBounds(20,595, 250, 100);
+		window.add(panel1);
+		window.repaint();
+	}
 	static public JPanel drawBoard() {
 		JPanel p1 = new JPanel() {
 			@Override
@@ -229,6 +250,8 @@ public class User_Host implements Runnable{
 		if (isTurn == false) return;
 		if (boardXY[i][j] != 0) return;
 		isTurn = false;
+		setPlayer1Turn(false);
+		setPlayer2Turn(true);
 		boardXY[i][j] = XYtype;
 		draw();
 		sendStringToAllClients(Requests.XYCoordinate);
@@ -244,16 +267,30 @@ public class User_Host implements Runnable{
 			PopUpMessage.infoBox("Hoà", "Kết quả");
 		}
 		else if (k == XYtype) {
-			sendStringToAllClients(Requests.FinishAnnounce);
-			//sửa lại thành displayname của host
-			sendStringToAllClients(userAccount.getDisplayName());
-			PopUpMessage.infoBox(userAccount.getDisplayName()+" thắng", "Kết quả");
+			try {
+				sendStringToAllClients(Requests.FinishAnnounce);
+				sendStringToAllClients(userAccount.getDisplayName());
+				dosToMainServer.writeUTF(Requests.WinLoseUpdate);
+				dosToMainServer.write(userAccount.getId_user());
+				dosToMainServer.write(id_p2);
+				PopUpMessage.infoBox(userAccount.getDisplayName()+" thắng", "Kết quả");
+			}
+			catch (Exception e){
+				System.out.println(e.toString());
+			}
 		}
 		else{
-			sendStringToAllClients(Requests.FinishAnnounce);
-			//sửa lại thành displayname của người chơi
-			sendStringToAllClients(player2DispayName);
-			PopUpMessage.infoBox(player2DispayName+" thắng", "Kết quả");
+			try {
+				sendStringToAllClients(Requests.FinishAnnounce);
+				sendStringToAllClients(player2DispayName);
+				dosToMainServer.writeUTF(Requests.WinLoseUpdate);
+				dosToMainServer.write(id_p2);
+				dosToMainServer.write(userAccount.getId_user());
+				PopUpMessage.infoBox(player2DispayName+" thắng", "Kết quả");
+			}
+			catch (Exception e){
+				System.out.println(e.toString());
+			}
 		}
 		boardReset();
 	}
@@ -335,6 +372,19 @@ public class User_Host implements Runnable{
 					try {
 						dosToMainServer.writeUTF(Requests.HostDisconnected);
 						dosToMainServer.write(currentRoom.getRoomID());
+						if (isPlayer2Joined) {
+							outerloop:
+							for(int i = 0; i < n; i++) {
+								for(int j = 0; j < n; j++) {
+									if (boardXY[i][j] != 0){
+										dosToMainServer.writeUTF(Requests.WinLoseUpdate);	
+										dosToMainServer.write(id_p2);
+										dosToMainServer.write(userAccount.getId_user());
+										break outerloop;
+									}
+								}
+							}
+						}
 						HostSocket.close();
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -360,11 +410,18 @@ public class User_Host implements Runnable{
 				if (isPlayer2Joined == false) return;
 				int input = JOptionPane.showConfirmDialog(null, "Xác nhận đầu hàng?");
 				if (input == 0) {
-					sendStringToAllClients(Requests.FinishAnnounce);
-					//sửa lại thành displayname của người chơi
-					sendStringToAllClients(player2DispayName);
-					PopUpMessage.infoBox(player2DispayName+" thắng", "Kết quả");
-					boardReset();
+					try {
+						sendStringToAllClients(Requests.FinishAnnounce);
+						sendStringToAllClients(player2DispayName);
+						PopUpMessage.infoBox(player2DispayName+" thắng", "Kết quả");
+						dosToMainServer.writeUTF(Requests.WinLoseUpdate);	
+						dosToMainServer.write(id_p2);
+						dosToMainServer.write(userAccount.getId_user());
+						boardReset();
+					}
+					catch(Exception e1) {
+						System.out.println(e1.toString());
+					}
 				}
 			}
 			
@@ -416,6 +473,8 @@ class Client extends Thread{
 					if (User_Host.XYtype == 1) type = 2;
 					User_Host.boardXY[i][j] = type;
 					User_Host.isTurn = true;
+					User_Host.setPlayer1Turn(true);
+					User_Host.setPlayer2Turn(false);
 					User_Host.draw();
 					User_Host.sendStringToAllClients(Requests.XYCoordinate);
 					User_Host.sendXYCoordinateToAllClients(i, j, type);
@@ -432,9 +491,11 @@ class Client extends Thread{
 					isPlayer2 = true;
 					User_Host.isPlayer2Joined = true;
 					User_Host.isTurn = true;
+					User_Host.setPlayer1Turn(true);
 					User_Host.boardReset();
 					String player2DisplayName = dis.readUTF();
 					User_Host.id_ava_p2 = dis.read();
+					User_Host.id_p2 = dis.read();
 					User_Host.setPlayer2Info(player2DisplayName, User_Host.id_ava_p2);
 					User_Host.player2DispayName = player2DisplayName;
 					dos.writeUTF(User_Host.userAccount.getDisplayName());
@@ -471,8 +532,10 @@ class Client extends Thread{
 				}
 				else if (s.equals(Requests.Surrender)) {
 					User_Host.sendStringToAllClients(Requests.FinishAnnounce);
-					//sửa lại thành displayname của host
 					User_Host.sendStringToAllClients(User_Host.userAccount.getDisplayName());
+					User_Host.dosToMainServer.writeUTF(Requests.WinLoseUpdate);
+					User_Host.dosToMainServer.write(User_Host.userAccount.getId_user());
+					User_Host.dosToMainServer.write(User_Host.id_p2);
 					PopUpMessage.infoBox(User_Host.userAccount.getDisplayName()+" thắng", "Kết quả");
 					User_Host.boardReset();
 				}
@@ -495,7 +558,6 @@ class Client extends Thread{
 					dos.writeUTF(User_Host.userAccount.getId_ava()+"");
 				}
 				else if (s.equals(Requests.Player2Disconnected)) {
-					User_Host.boardReset();
 					User_Host.isPlayer2Joined = false;
 					connectable = false;
 					User_Host.setPlayer2Info("", 0);
@@ -503,6 +565,18 @@ class Client extends Thread{
 					User_Host.sendStringToAllClients(User_Host.player2DispayName);
 					User_Host.dosToMainServer.writeUTF(Requests.Player2Disconnected);
 					User_Host.dosToMainServer.write(User_Host.currentRoom.getRoomID());
+					outerloop:
+					for(int i = 0; i < User_Host.n; i++) {
+						for(int j = 0; j < User_Host.n; j++) {
+							if (User_Host.boardXY[i][j] != 0) {
+								User_Host.dosToMainServer.writeUTF(Requests.WinLoseUpdate);
+								User_Host.dosToMainServer.write(User_Host.userAccount.getId_user());
+								User_Host.dosToMainServer.write(User_Host.id_p2);
+								break outerloop;
+							}							
+						}
+					}
+					User_Host.boardReset();
 					PopUpMessage.infoBox("Người chơi "+User_Host.player2DispayName+" đã đóng kết nối", "Thông báo");
 				}
 			}
@@ -512,7 +586,6 @@ class Client extends Thread{
 			connectable = false;
 			if (isPlayer2) {
 				User_Host.isPlayer2Joined = false;
-				//thong bao thua
 			}
 		}
 	}

@@ -239,7 +239,7 @@ public class Menu {
 		lbmn_if2.setBounds(50,250, 150, 30);
 		window.add(lbmn_if2);
 		//
-		lbmn_if3 = new JLabel("Trận thua:    "+ account.getBattleLost());
+		lbmn_if3 = new JLabel("Trận thua:  "+ account.getBattleLost());
 		lbmn_if3.setFont(new Font("Arial", Font.PLAIN, 20));
 		lbmn_if3.setBounds(50,290, 150, 30);
 		window.add(lbmn_if3);

@@ -159,6 +159,16 @@ public class BLL {
 		DAL.Instance().changeAvatar(id_ava, username);
 		
 	}
-
-
+	public int getBattlesWon(int id_user) {
+		return DAL.Instance().getBattlesWon(id_user);
+	}
+	public int getBattlesLost(int id_user) {
+		return DAL.Instance().getBattlesLost(id_user);
+	}
+	public void setbattlesWon(int id_user, int n) {
+		DAL.Instance().setbattlesWon(id_user, n);
+	}
+	public void setbattlesLost(int id_user, int n) {
+		DAL.Instance().setbattlesLost(id_user, n);
+	}
 }
