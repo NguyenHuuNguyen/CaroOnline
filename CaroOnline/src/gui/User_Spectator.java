@@ -51,6 +51,10 @@ public class User_Spectator implements Runnable{
 	JButton bexit;
 	JButton bdrawProposal;
 	JButton bff;
+	String hostDisplayName;
+	String p2DisplayName;
+	int host_id_ava;
+	int p2_id_ava;
 	
 	Socket skToMainServer;
 	DataInputStream disToMainServer;
@@ -136,7 +140,7 @@ public class User_Spectator implements Runnable{
 //		//player1(tam)
 		ava1 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		panel1 = plr1.setPayer1(ava1, "");
+		panel1 = plr1.setPayer1(ava1, "", false);
 		panel1.setLayout(null);
 		panel1.setBounds(20,595, 250, 100);
 		window.add(panel1);
@@ -144,7 +148,7 @@ public class User_Spectator implements Runnable{
 		//player2(tam)
 		ava2 = new ImageIcon("././resources/images/favicon.png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		panel2 = plr2.setPayer2(ava2, "");
+		panel2 = plr2.setPayer2(ava2, "", false);
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);
@@ -164,7 +168,7 @@ public class User_Spectator implements Runnable{
 		window.remove(panel2);
 		ava2 = new ImageIcon("././resources/avatar/"+id_ava_p2+".png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
-		panel2 = plr2.setPayer2(ava2, displayname);
+		panel2 = plr2.setPayer2(ava2, displayname, false);
 		panel2.setLayout(null);
 		panel2.setBounds(560,10, 250, 100);
 		window.add(panel2);
@@ -174,13 +178,32 @@ public class User_Spectator implements Runnable{
 		window.remove(panel1);
 		ava1 = new ImageIcon("././resources/avatar/"+id_ava_host+".png");
 		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
-		JPanel panel1 = plr1.setPayer1(ava1, displayname);
+		JPanel panel1 = plr1.setPayer1(ava1, displayname, false);
 		panel1.setLayout(null);
 		panel1.setBounds(20,595, 250, 100);
 		window.add(panel1);
 		window.repaint();
 	}
-	
+	void setPlayer2Turn(boolean isTurn) {
+		window.remove(panel2);
+		ava2 = new ImageIcon("././resources/avatar/"+p2_id_ava+".png");
+		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
+		panel2 = plr2.setPayer2(ava2, p2DisplayName, isTurn);
+		panel2.setLayout(null);
+		panel2.setBounds(560,10, 250, 100);
+		window.add(panel2);
+		window.repaint();
+	}
+	void setPlayer1Turn(boolean isTurn) {
+		window.remove(panel1);
+		ava1 = new ImageIcon("././resources/avatar/"+host_id_ava+".png");
+		Play_Player1_Avatar plr1 = new Play_Player1_Avatar();
+		panel1 = plr1.setPayer1(ava1, hostDisplayName, isTurn);
+		panel1.setLayout(null);
+		panel1.setBounds(20,595, 250, 100);
+		window.add(panel1);
+		window.repaint();
+	}
 	public JPanel drawBoard() {
 		JPanel p1 = new JPanel() {
 			@Override
@@ -277,6 +300,15 @@ public class User_Spectator implements Runnable{
 					int type = disToHost.readInt();
 					boardXY[i][j] = type;
 					draw();
+					if (type == 1) {
+						setPlayer1Turn(false);
+						setPlayer2Turn(true);
+					}
+					else{
+						//setPlayer1Turn(true);
+						setPlayer2Turn(false);
+						setPlayer1Turn(true);
+					}
 				}
 				else if (s.equals(Requests.ChatMessage)) {
 					s = disToHost.readUTF();
@@ -294,12 +326,12 @@ public class User_Spectator implements Runnable{
 					boardReset();
 				}
 				else if (s.equals(Requests.SendInfos)) {
-					String hostDisplayName = disToHost.readUTF();
-					String Player2DisplayName = disToHost.readUTF();
-					int id_ava_p2 = Integer.parseInt(disToHost.readUTF());
-					int id_ava_host = Integer.parseInt(disToHost.readUTF());
-					setPlayer1Info(hostDisplayName, id_ava_host);
-					setPlayer2Info(Player2DisplayName, id_ava_p2);
+					hostDisplayName = disToHost.readUTF();
+					p2DisplayName = disToHost.readUTF();
+					p2_id_ava = Integer.parseInt(disToHost.readUTF());
+					host_id_ava = Integer.parseInt(disToHost.readUTF());
+					setPlayer1Info(hostDisplayName, host_id_ava);
+					setPlayer2Info(p2DisplayName, p2_id_ava);
 					boardReset();
 					dosToHost.writeUTF(Requests.GetBoard);
 				}
@@ -319,7 +351,9 @@ public class User_Spectator implements Runnable{
 		}
 		catch(Exception e) {
 			System.out.println(e);
-			//xu ly loi, dang xuat
+			menu.setVisible(true);
+			window.dispose();
+			isrun = false;
 		}
 	}
 }

@@ -122,6 +122,9 @@ class CaroClient extends Thread{
 				else if(s.equals(Requests.ChangeAvatar)) {
 					changeAvatar();
 				}
+				else if(s.equals(Requests.WinLoseUpdate)) {
+					winLoseUpdate();
+				}
 				else dos.writeUTF(Responses.BadRequest);
 			}
 		}
@@ -138,8 +141,13 @@ class CaroClient extends Thread{
 			catch (Exception e1){}
 		}
 	}
+	private void winLoseUpdate() throws Exception {
+		int id_player_won = dis.read();
+		int id_player_lost = dis.read();
+		BLL.Instance().setbattlesWon(id_player_won, BLL.Instance().getBattlesWon(id_player_won) + 1);
+		BLL.Instance().setbattlesLost(id_player_lost, BLL.Instance().getBattlesLost(id_player_lost) + 1);
+	}
 	private void changeAvatar() throws Exception{
-		// TODO Auto-generated method stub
 		String username = dis.readUTF();
 		int id_ava = dis.read();
 		BLL.Instance().changeAvatar(id_ava, username);
