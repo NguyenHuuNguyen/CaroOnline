@@ -186,7 +186,7 @@ public class User_Spectator implements Runnable{
 	}
 	void setPlayer2Turn(boolean isTurn) {
 		window.remove(panel2);
-		ava2 = new ImageIcon("././resources/avatar/"+userAccount.getId_ava()+".png");
+		ava2 = new ImageIcon("././resources/avatar/"+p2_id_ava+".png");
 		Play_Player2_Avatar plr2 = new Play_Player2_Avatar();
 		panel2 = plr2.setPayer2(ava2, p2DisplayName, isTurn);
 		panel2.setLayout(null);
@@ -305,8 +305,9 @@ public class User_Spectator implements Runnable{
 						setPlayer2Turn(true);
 					}
 					else{
-						setPlayer1Turn(true);
+						//setPlayer1Turn(true);
 						setPlayer2Turn(false);
+						setPlayer1Turn(true);
 					}
 				}
 				else if (s.equals(Requests.ChatMessage)) {
@@ -350,6 +351,9 @@ public class User_Spectator implements Runnable{
 		}
 		catch(Exception e) {
 			System.out.println(e);
+			menu.setVisible(true);
+			window.dispose();
+			isrun = false;
 		}
 	}
 }
